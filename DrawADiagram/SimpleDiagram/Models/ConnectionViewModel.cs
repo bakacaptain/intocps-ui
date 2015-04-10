@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using ModelLibrary.Annotations;
+using ModelLibrary.Models;
 using SimpleDiagram.Controls;
 using SimpleDiagram.Controls.Adorners;
 
@@ -17,9 +20,24 @@ namespace SimpleDiagram.Models
 
         #region Properties
 
+        private Connection model;
+
+        public Connection Model
+        {
+            get { return model; }
+            set
+            {
+                if (model != value)
+                {
+                    model = value;
+                    OnPropertyChanged("Model");
+                }
+            }
+        }
+
         // source connector
-        private ConnectorViewModel source;
-        public ConnectorViewModel Source
+        private Connector source;
+        public Connector Source
         {
             get
             {
@@ -31,16 +49,16 @@ namespace SimpleDiagram.Models
                 {
                     if (source != null)
                     {
-                        source.PropertyChanged -= new PropertyChangedEventHandler(OnConnectorPositionChanged);
-                        source.Connections.Remove(this);
+                        source.PropertyChanged -= OnConnectorPositionChanged;
+                        source.Connections.Remove(Model);
                     }
 
                     source = value;
 
                     if (source != null)
                     {
-                        source.Connections.Add(this);
-                        source.PropertyChanged += new PropertyChangedEventHandler(OnConnectorPositionChanged);
+                        source.Connections.Add(Model);
+                        source.PropertyChanged += OnConnectorPositionChanged;
                     }
 
                     UpdatePathGeometry();
@@ -49,8 +67,8 @@ namespace SimpleDiagram.Models
         }
 
         // sink connector
-        private ConnectorViewModel sink;
-        public ConnectorViewModel Sink
+        private Connector sink;
+        public Connector Sink
         {
             get { return sink; }
             set
@@ -59,16 +77,16 @@ namespace SimpleDiagram.Models
                 {
                     if (sink != null)
                     {
-                        sink.PropertyChanged -= new PropertyChangedEventHandler(OnConnectorPositionChanged);
-                        sink.Connections.Remove(this);
+                        sink.PropertyChanged -= OnConnectorPositionChanged;
+                        sink.Connections.Remove(model);
                     }
 
                     sink = value;
 
                     if (sink != null)
                     {
-                        sink.Connections.Add(this);
-                        sink.PropertyChanged += new PropertyChangedEventHandler(OnConnectorPositionChanged);
+                        sink.Connections.Add(model);
+                        sink.PropertyChanged += OnConnectorPositionChanged;
                     }
                     UpdatePathGeometry();
                 }
@@ -235,11 +253,11 @@ namespace SimpleDiagram.Models
 
         #endregion
 
-        public ConnectionViewModel(ConnectorViewModel source, ConnectorViewModel sink)
+        public ConnectionViewModel(Connector source, Connector sink)
         {
             this.Source = source;
             this.Sink = sink;
-            base.Unloaded += new RoutedEventHandler(Connection_Unloaded);
+            base.Unloaded += Connection_Unloaded;
         }
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
@@ -293,7 +311,7 @@ namespace SimpleDiagram.Models
             if (Source != null && Sink != null)
             {
                 PathGeometry geometry = new PathGeometry();
-                List<Point> linePoints = PathFinder.GetConnectionLine(Source.GetInfo(), Sink.GetInfo(), true);
+                List<Point> linePoints = PathFinder.GetConnectionLine(Source, Sink, true);
                 if (linePoints.Count > 0)
                 {
                     PathFigure figure = new PathFigure();
@@ -380,18 +398,18 @@ namespace SimpleDiagram.Models
         #region INotifyPropertyChanged Members
 
         // we could use DependencyProperties as well to inform others of property changes
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected void OnPropertyChanged(string name)
-        {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(name));
-            }
-        }
+        
 
         #endregion
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            var handler = PropertyChanged;
+            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 
     public enum ArrowSymbol

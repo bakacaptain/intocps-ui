@@ -16,6 +16,10 @@ namespace SimpleDiagram.Models
 {
     public class ConnectorViewModel : Control, INotifyPropertyChanged
     {
+        #region Properties
+        
+        #endregion
+
         public ConnectorViewModel()
         {
             LayoutUpdated += Connector_LayoutUpdated;
@@ -29,7 +33,7 @@ namespace SimpleDiagram.Models
             if (diagram != null)
             {
                 //get centre position of this Connector relative to the DesignerCanvas
-                Position = TransformToAncestor(diagram).Transform(new Point(Width/2, Height/2));
+                Connector.Position = TransformToAncestor(diagram).Transform(new Point(Width/2, Height/2));
             }
         }
 
@@ -93,7 +97,7 @@ namespace SimpleDiagram.Models
         #region DependencyProperties
 
         public static readonly DependencyProperty OrientationProperty =
-           DependencyProperty.RegisterAttached("Orientation", typeof(ConnectorOrientation), typeof(ConnectorViewModel),
+           DependencyProperty.RegisterAttached("Type", typeof(ConnectorOrientation), typeof(ConnectorViewModel),
            new FrameworkPropertyMetadata(ConnectorOrientation.None,
                                          new PropertyChangedCallback(ConnectorViewModel.OnOrientationChanged)));
 
@@ -122,21 +126,6 @@ namespace SimpleDiagram.Models
 
         #endregion
 
-        private Point position;
-
-        public Point Position
-        {
-            get { return position; }
-            set
-            {
-                if (position != value)
-                {
-                    position = value;
-                    OnPropertyChanged("Position");
-                }
-            }
-        }
-
         private List<ConnectionViewModel> connections;
 
         public List<ConnectionViewModel> Connections
@@ -160,8 +149,8 @@ namespace SimpleDiagram.Models
                 DesignerItemLeft = Canvas.GetLeft(ParentContainer),
                 DesignerItemTop = Canvas.GetTop(ParentContainer),
                 DesignerItemSize = new Size(ParentContainer.ActualWidth, ParentContainer.ActualHeight),
-                Orientation = Orientation,
-                Position = Position
+                Type = Connector.Type,
+                Position = Connector.Position
             };
             return info;
         }
@@ -184,7 +173,7 @@ namespace SimpleDiagram.Models
         public double DesignerItemTop { get; set; }
         public Size DesignerItemSize { get; set; }
         public Point Position { get; set; }
-        public ConnectorOrientation Orientation { get; set; }
+        public Direction Type { get; set; }
     }
 
     public enum ConnectorOrientation

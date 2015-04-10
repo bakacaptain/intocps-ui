@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using ModelLibrary.Models;
 using SimpleDiagram.Models;
 
@@ -41,5 +42,11 @@ namespace SimpleDiagram.Services
         void OpenModelInExternalTool(BlockViewModel model);
         void AddInputConnector(BlockViewModel model);
         void AddOutputConnector(BlockViewModel model);
+
+        void AddConnection(ConnectionViewModel connection);
+        void RemoveConnection(ConnectionViewModel connection);
+
+        IEnumerable<BlockViewModel> GetBlocks();
+        IEnumerable<ConnectionViewModel> GetConnections();
     }
 }

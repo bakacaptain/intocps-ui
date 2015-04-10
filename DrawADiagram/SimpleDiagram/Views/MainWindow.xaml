@@ -40,23 +40,66 @@
                     </ScrollViewer>
             </TabItem>
             <TabItem x:Name="ParamTab" Header="Parameters" TabIndex="1">
-                <StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <Label Content="Name" />
-                        <TextBox x:Name="ParamDisplayName" />
+                <ScrollViewer>
+                    <StackPanel Orientation="Vertical">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Label Content="Name" Grid.Row="0" Grid.Column="0" />
+                            <TextBox x:Name="ParamDisplayName" Grid.Row="0" Grid.Column="1" />
+                            <Label Content="Version" Grid.Row="1" Grid.Column="0" />
+                            <Label x:Name="ParamModelVersion" Grid.Row="1" Grid.Column="1" />
+                        </Grid>
+                        <Label Content="Parameters" FontStyle="Oblique" />
+                        <ListBox x:Name="ParamList">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Label Content="{Binding Key}" Height="22" FontSize="10" />
+                                        <TextBox Text="{Binding Value, Mode=TwoWay}" Height="22" FontSize="10" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <Label Content="IO" FontStyle="Oblique" />
+                        <ListBox x:Name="IOList">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Label Content="Name" Grid.Row="0" Grid.Column="0" Height="22" FontSize="10" />
+                                        <TextBox Text="{Binding Name, Mode=TwoWay}"  Grid.Row="0" Grid.Column="1" Height="22" FontSize="10" />
+                                        <Label Content="Type" Grid.Row="0" Grid.Column="2" Height="22" FontSize="10" />
+                                        <Label Content="{Binding Type}" Grid.Row="0" Grid.Column="3" Height="22" FontSize="10" />
+                                        <Label Content="Unit Type" Grid.Row="0" Grid.Column="4" Height="22" FontSize="10" />
+                                        <TextBox Text="{Binding UnitType,Mode=TwoWay}" Grid.Row="0" Grid.Column="5" Height="22" FontSize="10" />
+                                        <Label Content="External Hook" Grid.Column="6" Height="22" FontSize="10" />
+                                        <TextBox Text="{Binding Hook,Mode=TwoWay}" Grid.Column="7" Height="22" FontSize="10" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
                     </StackPanel>
-                    
-                    <ListBox x:Name="ParamList">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
-                                    <Label Content="{Binding Key}" />
-                                    <TextBox Text="{Binding Value, Mode=TwoWay}" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </StackPanel>
+                </ScrollViewer>
             </TabItem>
             <TabItem x:Name="ResultTab" Header="Results" TabIndex="2">
                 <v:PlotView Model="{Binding Results}" />

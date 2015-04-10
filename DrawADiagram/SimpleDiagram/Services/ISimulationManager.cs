@@ -15,8 +15,7 @@ namespace SimpleDiagram.Services
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="models"></param>
-        void ConfigureConnections(IEnumerable models);
+        void ConfigureConnections();
 
         /// <summary>
         /// Model consistency check

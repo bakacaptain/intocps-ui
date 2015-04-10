@@ -1,11 +1,13 @@
 ﻿using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using Castle.Core.Internal;
 using ModelLibrary.Models;
 using SimpleDiagram.Factories;
 using SimpleDiagram.Models;
@@ -22,10 +24,16 @@ namespace SimpleDiagram.Services
         public event EventHandler<BlockViewModel> OnModelRemoved;
         public event EventHandler<BlockViewModel> OnViewModelParameters;
 
+        private List<BlockViewModel> blockViewModels;
+        private List<ConnectionViewModel> connectionViewModels;
+
         public ModelManager(IModelFactory modelFactory, IConnectorFactory connectorFactory)
         {
             this.modelFactory = modelFactory;
             this.connectorFactory = connectorFactory;
+
+            blockViewModels = new List<BlockViewModel>();
+            connectionViewModels = new List<ConnectionViewModel>();
 
             // Initializing default eventhandlers
             OnModelRedraw += (sender, block) => { };
@@ -39,6 +47,8 @@ namespace SimpleDiagram.Services
         {
             var block = new Block()
             {
+                Name = "New Block",
+                Version = "N/A",
                 Position = new Point(x,y),
             };
 
@@ -47,6 +57,7 @@ namespace SimpleDiagram.Services
 
         public void CreateModel(Block block)
         {
+            #region internal elements
             var rect = new Rectangle
             {
                 Fill = Brushes.White,
@@ -54,13 +65,40 @@ namespace SimpleDiagram.Services
                 IsHitTestVisible = false
             };
 
-            var grid = new Grid();
-            grid.Children.Add(rect);
-            grid.Children.Add(new TextBlock()
+            var blockTitle = new TextBlock()
             {
                 Text = "<<Block>>",
-                IsHitTestVisible = false
-            });
+                IsHitTestVisible = false,
+                FontSize = 10,
+                FontStyle = FontStyles.Oblique,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+
+            var blockName = new TextBlock
+            {
+                IsHitTestVisible = false,
+                FontSize = 11,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            var nameBind = new Binding
+            {
+                Source = block,
+                Path = new PropertyPath("Name"),
+                Mode = BindingMode.OneWay
+            };
+            blockName.SetBinding(TextBlock.TextProperty, nameBind);
+            #endregion
+
+            var stack = new StackPanel
+            {
+                Orientation = Orientation.Vertical
+            };
+            stack.Children.Add(blockTitle);
+            stack.Children.Add(blockName);
+
+            var grid = new Grid();
+            grid.Children.Add(rect);
+            grid.Children.Add(stack);
 
             CreateModel(block, grid);
         }
@@ -79,6 +117,7 @@ namespace SimpleDiagram.Services
         public void AddModel(BlockViewModel model)
         {
             OnModelAdded(this, model);
+            blockViewModels.Add(model);
         }
 
         public void RemoveModel(BlockViewModel model)
@@ -86,6 +125,7 @@ namespace SimpleDiagram.Services
             //TODO: dispose connection objects
             //TODO: dispose this object
             OnModelRemoved(this, model);
+            blockViewModels.Remove(model);
         }
 
         public void CopyModel(BlockViewModel model)
@@ -94,6 +134,7 @@ namespace SimpleDiagram.Services
             var position = model.BlockModel.Position;
             copy.BlockModel.Position = new Point(position.X+20,position.Y+20);
             OnModelAdded(this, copy);
+            blockViewModels.Add(copy);
         }
 
         public void DisplayParameters(BlockViewModel model)
@@ -115,10 +156,18 @@ namespace SimpleDiagram.Services
         {
             var parameters = PropertyAdvisor.GetExternalToolParameter(model.BlockModel.Parameters, "Overture");
 
-            var args = string.Format("{0} {1}", 
-                parameters.First(parm => parm.Key == PropertyAdvisor.ARGUMENT).Value,
-                parameters.First(parm => parm.Key == PropertyAdvisor.PROJECT).Value);
-            Task.Factory.StartNew(() => SimpleProcessSpawner.Start(parameters.First(parm => parm.Key == PropertyAdvisor.TOOL).Value, args));
+            var arg = parameters.First(parm => parm.Key == PropertyAdvisor.ARGUMENT).Value;
+            var proj = parameters.First(parm => parm.Key == PropertyAdvisor.PROJECT).Value;
+            var processname = parameters.First(parm => parm.Key == PropertyAdvisor.TOOL).Value;
+
+            if (!(processname.IsNullOrEmpty() || proj.IsNullOrEmpty()))
+            {
+                var commands = string.Format("{0} {1}", arg, proj);
+                Task.Factory.StartNew(() =>
+                {
+                    SimpleProcessSpawner.Start(processname, commands);
+                });
+            }
         }
 
         public void AddInputConnector(BlockViewModel model)
@@ -127,6 +176,8 @@ namespace SimpleDiagram.Services
             var name = string.Format("input_{0}", model.BlockModel.Connectors.Count);
             newConnector.Name = name;
             newConnector.Type = Direction.IN;
+            newConnector.UnitType = "N/A";
+            newConnector.Hook = "N/A";
             model.BlockModel.Connectors.Add(newConnector);
         }
 
@@ -136,7 +187,33 @@ namespace SimpleDiagram.Services
             var name = string.Format("output_{0}", model.BlockModel.Connectors.Count);
             newConnector.Name = name;
             newConnector.Type = Direction.OUT;
+            newConnector.UnitType = "N/A";
+            newConnector.Hook = "N/A";
             model.BlockModel.Connectors.Add(newConnector);
+        }
+
+        public void AddConnection(ConnectionViewModel connection)
+        {
+            connectionViewModels.Add(connection);
+            connection.Sink.PropertyChanged += (sender, args) =>
+            {
+                Console.WriteLine("Property changed");
+            };
+        }
+
+        public void RemoveConnection(ConnectionViewModel connection)
+        {
+            connectionViewModels.Remove(connection);
+        }
+
+        public IEnumerable<BlockViewModel> GetBlocks()
+        {
+            return blockViewModels;
+        }
+
+        public IEnumerable<ConnectionViewModel> GetConnections()
+        {
+            return connectionViewModels;
         }
     }
 }

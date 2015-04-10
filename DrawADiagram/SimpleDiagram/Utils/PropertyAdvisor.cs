@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Castle.Core.Internal;
+using ModelLibrary.Utils;
 
 namespace SimpleDiagram.Utils
 {
@@ -39,7 +40,7 @@ namespace SimpleDiagram.Utils
         /// <param name="collection"></param>
         /// <param name="keyStem">Prefixes will be applied to the keyStem</param>
         /// <returns></returns>
-        public static ObservableCollection <KeyValuePair<string, string>> GetExternalToolParameter(ICollection<KeyValuePair<string,string>> collection, string keyStem)
+        public static ObservableCollection <KeyValueCouple<string, string>> GetExternalToolParameter(ICollection<KeyValueCouple<string,string>> collection, string keyStem)
         {
             var Get = new Func<string,string>((key) =>
             {
@@ -50,15 +51,15 @@ namespace SimpleDiagram.Utils
             var projectPath = Get(ProjectKey(keyStem));
             var argument = Get(ArgumentKey(keyStem));
 
-            return new ObservableCollection<KeyValuePair<string, string>>
+            return new ObservableCollection<KeyValueCouple<string, string>>
             {
-                new KeyValuePair<string, string>(TOOL, toolPath),
-                new KeyValuePair<string, string>(PROJECT, projectPath),
-                new KeyValuePair<string, string>(ARGUMENT, argument)
+                new KeyValueCouple<string, string>(TOOL, toolPath),
+                new KeyValueCouple<string, string>(PROJECT, projectPath),
+                new KeyValueCouple<string, string>(ARGUMENT, argument)
             };
         }
 
-        public static void SetExternalToolParameter(ICollection<KeyValuePair<string, string>> collection, string keyStem,
+        public static void SetExternalToolParameter(ICollection<KeyValueCouple<string, string>> collection, string keyStem,
             string toolPath, string projectPath, string argument)
         {
             var toolKey = ToolKey(keyStem);
@@ -68,7 +69,7 @@ namespace SimpleDiagram.Utils
             var Add = new Action<string, string>((key, value) =>
             {
                 collection.Where(pair => pair.Key == key).ForEach(pair => collection.Remove(pair));
-                collection.Add(new KeyValuePair<string, string>(key, value));
+                collection.Add(new KeyValueCouple<string, string>(key, value));
             });
 
             Add(toolKey, toolPath);

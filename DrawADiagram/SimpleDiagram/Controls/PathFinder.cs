@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using ModelLibrary.Models;
 using SimpleDiagram.Models;
 
 namespace SimpleDiagram.Controls
@@ -61,7 +62,7 @@ namespace SimpleDiagram.Controls
                         if (!IsRectVisible(currentPoint, rectSink, new Rect[] { rectSource }))
                         {
                             Point n1, n2;
-                            GetOppositeCorners(source.Orientation, rectSource, out n1, out n2);
+                            GetOppositeCorners(source.Type, rectSource, out n1, out n2);
                             if (flag)
                             {
                                 linePoints.Add(n1);
@@ -95,8 +96,8 @@ namespace SimpleDiagram.Controls
                     {
                         Point n1, n2; // neighbour corner
                         Point s1, s2; // opposite corner
-                        GetNeighborCorners(sink.Orientation, rectSink, out s1, out s2);
-                        GetOppositeCorners(sink.Orientation, rectSink, out n1, out n2);
+                        GetNeighborCorners(sink.Type, rectSink, out s1, out s2);
+                        GetOppositeCorners(sink.Type, rectSink, out n1, out n2);
 
                         bool n1Visible = IsPointVisible(currentPoint, n1, new Rect[] { rectSource, rectSink });
                         bool n2Visible = IsPointVisible(currentPoint, n2, new Rect[] { rectSource, rectSink });
@@ -201,13 +202,13 @@ namespace SimpleDiagram.Controls
                 linePoints.Add(endPoint);
             }
 
-            linePoints = OptimizeLinePoints(linePoints, new Rect[] { rectSource, rectSink }, source.Orientation, sink.Orientation);
+            linePoints = OptimizeLinePoints(linePoints, new Rect[] { rectSource, rectSink }, source.Type, sink.Type);
 
             CheckPathEnd(source, sink, showLastLine, linePoints);
             return linePoints;
         }
 
-        internal static List<Point> GetConnectionLine(ConnectorInfo source, Point sinkPoint, ConnectorOrientation preferredOrientation)
+        internal static List<Point> GetConnectionLine(ConnectorInfo source, Point sinkPoint, Direction preferedType)
         {
             List<Point> linePoints = new List<Point>();
             Rect rectSource = GetRectWithMargin(source, 10);
@@ -240,7 +241,7 @@ namespace SimpleDiagram.Controls
                     else
                     {
                         Point n1, n2;
-                        GetOppositeCorners(source.Orientation, rectSource, out n1, out n2);
+                        GetOppositeCorners(source.Type, rectSource, out n1, out n2);
                         if (sideFlag)
                             linePoints.Add(n1);
                         else
@@ -256,15 +257,15 @@ namespace SimpleDiagram.Controls
                 linePoints.Add(endPoint);
             }
 
-            if (preferredOrientation != ConnectorOrientation.None)
-                linePoints = OptimizeLinePoints(linePoints, new Rect[] { rectSource }, source.Orientation, preferredOrientation);
+            if (preferedType != Direction.UNKNOWN)
+                linePoints = OptimizeLinePoints(linePoints, new Rect[] { rectSource }, source.Type, preferedType);
             else
-                linePoints = OptimizeLinePoints(linePoints, new Rect[] { rectSource }, source.Orientation, GetOpositeOrientation(source.Orientation));
+                linePoints = OptimizeLinePoints(linePoints, new Rect[] { rectSource }, source.Type, GetOpositeDirection(source.Type));
 
             return linePoints;
         }
 
-        private static List<Point> OptimizeLinePoints(List<Point> linePoints, Rect[] rectangles, ConnectorOrientation sourceOrientation, ConnectorOrientation sinkOrientation)
+        private static List<Point> OptimizeLinePoints(List<Point> linePoints, Rect[] rectangles, Direction sourceOrientation, Direction sinkOrientation)
         {
             List<Point> points = new List<Point>();
             int cut = 0;
@@ -290,24 +291,24 @@ namespace SimpleDiagram.Controls
             {
                 if (points[j].X != points[j + 1].X && points[j].Y != points[j + 1].Y)
                 {
-                    ConnectorOrientation orientationFrom;
-                    ConnectorOrientation orientationTo;
+                    Direction directionFrom;
+                    Direction directionTo;
 
-                    // orientation from point
+                    // type from point
                     if (j == 0)
-                        orientationFrom = sourceOrientation;
+                        directionFrom = sourceOrientation;
                     else
-                        orientationFrom = GetOrientation(points[j], points[j - 1]);
+                        directionFrom = GetOrientation(points[j], points[j - 1]);
 
-                    // orientation to pint 
+                    // type to pint 
                     if (j == points.Count - 2)
-                        orientationTo = sinkOrientation;
+                        directionTo = sinkOrientation;
                     else
-                        orientationTo = GetOrientation(points[j + 1], points[j + 2]);
+                        directionTo = GetOrientation(points[j + 1], points[j + 2]);
 
 
-                    if ((orientationFrom == ConnectorOrientation.Left || orientationFrom == ConnectorOrientation.Right) &&
-                        (orientationTo == ConnectorOrientation.Left || orientationTo == ConnectorOrientation.Right))
+                    if ((directionFrom == Direction.IN || directionFrom == Direction.OUT) &&
+                        (directionTo == Direction.IN || directionTo == Direction.OUT))
                     {
                         double centerX = Math.Min(points[j].X, points[j + 1].X) + Math.Abs(points[j].X - points[j + 1].X) / 2;
                         points.Insert(j + 1, new Point(centerX, points[j].Y));
@@ -317,30 +318,31 @@ namespace SimpleDiagram.Controls
                         return points;
                     }
 
-                    if ((orientationFrom == ConnectorOrientation.Top || orientationFrom == ConnectorOrientation.Bottom) &&
-                        (orientationTo == ConnectorOrientation.Top || orientationTo == ConnectorOrientation.Bottom))
-                    {
-                        double centerY = Math.Min(points[j].Y, points[j + 1].Y) + Math.Abs(points[j].Y - points[j + 1].Y) / 2;
-                        points.Insert(j + 1, new Point(points[j].X, centerY));
-                        points.Insert(j + 2, new Point(points[j + 2].X, centerY));
-                        if (points.Count - 1 > j + 3)
-                            points.RemoveAt(j + 3);
-                        return points;
-                    }
+                    //// Should not be needed as there are two directions
+                    //if ((directionFrom == ConnectorOrientation.Top || directionFrom == ConnectorOrientation.Bottom) &&
+                    //    (directionTo == ConnectorOrientation.Top || directionTo == ConnectorOrientation.Bottom))
+                    //{
+                    //    double centerY = Math.Min(points[j].Y, points[j + 1].Y) + Math.Abs(points[j].Y - points[j + 1].Y) / 2;
+                    //    points.Insert(j + 1, new Point(points[j].X, centerY));
+                    //    points.Insert(j + 2, new Point(points[j + 2].X, centerY));
+                    //    if (points.Count - 1 > j + 3)
+                    //        points.RemoveAt(j + 3);
+                    //    return points;
+                    //}
 
-                    if ((orientationFrom == ConnectorOrientation.Left || orientationFrom == ConnectorOrientation.Right) &&
-                        (orientationTo == ConnectorOrientation.Top || orientationTo == ConnectorOrientation.Bottom))
-                    {
-                        points.Insert(j + 1, new Point(points[j + 1].X, points[j].Y));
-                        return points;
-                    }
+                    //if ((directionFrom == ConnectorOrientation.Left || directionFrom == ConnectorOrientation.Right) &&
+                    //    (directionTo == ConnectorOrientation.Top || directionTo == ConnectorOrientation.Bottom))
+                    //{
+                    //    points.Insert(j + 1, new Point(points[j + 1].X, points[j].Y));
+                    //    return points;
+                    //}
 
-                    if ((orientationFrom == ConnectorOrientation.Top || orientationFrom == ConnectorOrientation.Bottom) &&
-                        (orientationTo == ConnectorOrientation.Left || orientationTo == ConnectorOrientation.Right))
-                    {
-                        points.Insert(j + 1, new Point(points[j].X, points[j + 1].Y));
-                        return points;
-                    }
+                    //if ((directionFrom == ConnectorOrientation.Top || directionFrom == ConnectorOrientation.Bottom) &&
+                    //    (directionTo == ConnectorOrientation.Left || directionTo == ConnectorOrientation.Right))
+                    //{
+                    //    points.Insert(j + 1, new Point(points[j].X, points[j + 1].Y));
+                    //    return points;
+                    //}
                 }
             }
             #endregion
@@ -348,46 +350,47 @@ namespace SimpleDiagram.Controls
             return points;
         }
 
-        private static ConnectorOrientation GetOrientation(Point p1, Point p2)
+        private static Direction GetOrientation(Point p1, Point p2)
         {
-            if (p1.X == p2.X)
-            {
-                if (p1.Y >= p2.Y)
-                    return ConnectorOrientation.Bottom;
-                else
-                    return ConnectorOrientation.Top;
-            }
-            else if (p1.Y == p2.Y)
-            {
-                if (p1.X >= p2.X)
-                    return ConnectorOrientation.Right;
-                else
-                    return ConnectorOrientation.Left;
-            }
-            throw new Exception("Failed to retrieve orientation");
+            //// Original ConnectorOrientation
+            //if (p1.X == p2.X)
+            //{
+            //    if (p1.Y >= p2.Y)
+            //        return ConnectorOrientation.Bottom;
+            //    else
+            //        return ConnectorOrientation.Top;
+            //}
+            //else if (p1.Y == p2.Y)
+            //{
+            //    if (p1.X >= p2.X)
+            //        return ConnectorOrientation.Right;
+            //    else
+            //        return ConnectorOrientation.Left;
+            //}
+
+            return p1.X <= p2.X ? Direction.OUT : Direction.IN;
+            throw new Exception("Failed to retrieve type");
         }
 
-        private static Orientation GetOrientation(ConnectorOrientation sourceOrientation)
+        private static Orientation GetOrientation(Direction type)
         {
-            switch (sourceOrientation)
+            switch (type)
             {
-                case ConnectorOrientation.Left:
+                case Direction.IN:
                     return Orientation.Horizontal;
-                case ConnectorOrientation.Top:
-                    return Orientation.Vertical;
-                case ConnectorOrientation.Right:
+                case Direction.OUT:
                     return Orientation.Horizontal;
-                case ConnectorOrientation.Bottom:
-                    return Orientation.Vertical;
+                case Direction.INOUT:
+                    //TODO: decide if it is needed
                 default:
-                    throw new Exception("Unknown ConnectorOrientation");
+                    throw new Exception(string.Format("Unknown Direction: {0}",type));
             }
         }
 
         private static Point GetNearestNeighborSource(ConnectorInfo source, Point endPoint, Rect rectSource, Rect rectSink, out bool flag)
         {
             Point n1, n2; // neighbors
-            GetNeighborCorners(source.Orientation, rectSource, out n1, out n2);
+            GetNeighborCorners(source.Type, rectSource, out n1, out n2);
 
             if (rectSink.Contains(n1))
             {
@@ -416,7 +419,7 @@ namespace SimpleDiagram.Controls
         private static Point GetNearestNeighborSource(ConnectorInfo source, Point endPoint, Rect rectSource, out bool flag)
         {
             Point n1, n2; // neighbors
-            GetNeighborCorners(source.Orientation, rectSource, out n1, out n2);
+            GetNeighborCorners(source.Type, rectSource, out n1, out n2);
 
             if ((Distance(n1, endPoint) <= Distance(n2, endPoint)))
             {
@@ -433,7 +436,7 @@ namespace SimpleDiagram.Controls
         private static Point GetNearestVisibleNeighborSink(Point currentPoint, Point endPoint, ConnectorInfo sink, Rect rectSource, Rect rectSink)
         {
             Point s1, s2; // neighbors on sink side
-            GetNeighborCorners(sink.Orientation, rectSink, out s1, out s2);
+            GetNeighborCorners(sink.Type, rectSink, out s1, out s2);
 
             bool flag1 = IsPointVisible(currentPoint, s1, new Rect[] { rectSource, rectSink });
             bool flag2 = IsPointVisible(currentPoint, s2, new Rect[] { rectSource, rectSink });
@@ -505,43 +508,35 @@ namespace SimpleDiagram.Controls
             return rect.IntersectsWith(new Rect(startPoint, endPoint));
         }
 
-        private static void GetOppositeCorners(ConnectorOrientation orientation, Rect rect, out Point n1, out Point n2)
+        private static void GetOppositeCorners(Direction type, Rect rect, out Point n1, out Point n2)
         {
-            switch (orientation)
+            switch (type)
             {
-                case ConnectorOrientation.Left:
+                case Direction.IN:
                     n1 = rect.TopRight; n2 = rect.BottomRight;
                     break;
-                case ConnectorOrientation.Top:
-                    n1 = rect.BottomLeft; n2 = rect.BottomRight;
-                    break;
-                case ConnectorOrientation.Right:
+                case Direction.OUT:
                     n1 = rect.TopLeft; n2 = rect.BottomLeft;
                     break;
-                case ConnectorOrientation.Bottom:
-                    n1 = rect.TopLeft; n2 = rect.TopRight;
-                    break;
+                case Direction.INOUT:
+                    //TODO: decide if it is needed
                 default:
                     throw new Exception("No opposite corners found!");
             }
         }
 
-        private static void GetNeighborCorners(ConnectorOrientation orientation, Rect rect, out Point n1, out Point n2)
+        private static void GetNeighborCorners(Direction type, Rect rect, out Point n1, out Point n2)
         {
-            switch (orientation)
+            switch (type)
             {
-                case ConnectorOrientation.Left:
+                case Direction.IN:
                     n1 = rect.TopLeft; n2 = rect.BottomLeft;
                     break;
-                case ConnectorOrientation.Top:
-                    n1 = rect.TopLeft; n2 = rect.TopRight;
-                    break;
-                case ConnectorOrientation.Right:
+                case Direction.OUT:
                     n1 = rect.TopRight; n2 = rect.BottomRight;
                     break;
-                case ConnectorOrientation.Bottom:
-                    n1 = rect.BottomLeft; n2 = rect.BottomRight;
-                    break;
+                case Direction.INOUT:
+                    //TODO: decide if needed later
                 default:
                     throw new Exception("No neighour corners found!");
             }
@@ -568,19 +563,13 @@ namespace SimpleDiagram.Controls
         {
             Point offsetPoint = new Point();
 
-            switch (connector.Orientation)
+            switch (connector.Type)
             {
-                case ConnectorOrientation.Left:
+                case Direction.IN:
                     offsetPoint = new Point(rect.Left, connector.Position.Y);
                     break;
-                case ConnectorOrientation.Top:
-                    offsetPoint = new Point(connector.Position.X, rect.Top);
-                    break;
-                case ConnectorOrientation.Right:
+                case Direction.OUT:
                     offsetPoint = new Point(rect.Right, connector.Position.Y);
-                    break;
-                case ConnectorOrientation.Bottom:
-                    offsetPoint = new Point(connector.Position.X, rect.Bottom);
                     break;
                 default:
                     break;
@@ -596,37 +585,25 @@ namespace SimpleDiagram.Controls
                 Point startPoint = new Point(0, 0);
                 Point endPoint = new Point(0, 0);
                 double marginPath = 15;
-                switch (source.Orientation)
+                switch (source.Type)
                 {
-                    case ConnectorOrientation.Left:
+                    case Direction.IN:
                         startPoint = new Point(source.Position.X - marginPath, source.Position.Y);
                         break;
-                    case ConnectorOrientation.Top:
-                        startPoint = new Point(source.Position.X, source.Position.Y - marginPath);
-                        break;
-                    case ConnectorOrientation.Right:
+                    case Direction.OUT:
                         startPoint = new Point(source.Position.X + marginPath, source.Position.Y);
-                        break;
-                    case ConnectorOrientation.Bottom:
-                        startPoint = new Point(source.Position.X, source.Position.Y + marginPath);
                         break;
                     default:
                         break;
                 }
 
-                switch (sink.Orientation)
+                switch (sink.Type)
                 {
-                    case ConnectorOrientation.Left:
+                    case Direction.IN:
                         endPoint = new Point(sink.Position.X - marginPath, sink.Position.Y);
                         break;
-                    case ConnectorOrientation.Top:
-                        endPoint = new Point(sink.Position.X, sink.Position.Y - marginPath);
-                        break;
-                    case ConnectorOrientation.Right:
+                    case Direction.OUT:
                         endPoint = new Point(sink.Position.X + marginPath, sink.Position.Y);
-                        break;
-                    case ConnectorOrientation.Bottom:
-                        endPoint = new Point(sink.Position.X, sink.Position.Y + marginPath);
                         break;
                     default:
                         break;
@@ -641,20 +618,16 @@ namespace SimpleDiagram.Controls
             }
         }
 
-        private static ConnectorOrientation GetOpositeOrientation(ConnectorOrientation connectorOrientation)
+        private static Direction GetOpositeDirection(Direction type)
         {
-            switch (connectorOrientation)
+            switch (type)
             {
-                case ConnectorOrientation.Left:
-                    return ConnectorOrientation.Right;
-                case ConnectorOrientation.Top:
-                    return ConnectorOrientation.Bottom;
-                case ConnectorOrientation.Right:
-                    return ConnectorOrientation.Left;
-                case ConnectorOrientation.Bottom:
-                    return ConnectorOrientation.Top;
+                case Direction.IN:
+                    return Direction.OUT;
+                case Direction.OUT:
+                    return Direction.IN;
                 default:
-                    return ConnectorOrientation.Top;
+                    return Direction.UNKNOWN;
             }
         }
     }

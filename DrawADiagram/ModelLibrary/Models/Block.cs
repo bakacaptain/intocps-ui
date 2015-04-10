@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -13,11 +12,12 @@ namespace ModelLibrary.Models
     public class Block : INotifyPropertyChanged
     {
         private string name;
+        private string version;
         private Point position;
         private double height;
         private double width;
         private PropertyObservingCollection<Connector> connectors;
-        private ObservableCollection<KeyValuePair<string,string>> parameters;
+        private ObservableCollection<KeyValueCouple<string,string>> parameters;
 
         public string Name
         {
@@ -28,6 +28,19 @@ namespace ModelLibrary.Models
                 {
                     name = value;
                     OnPropertyChanged("Name");
+                }
+            }
+        }
+
+        public string Version
+        {
+            get { return version; }
+            set
+            {
+                if (version != value)
+                {
+                    version = value;
+                    OnPropertyChanged("Version");
                 }
             }
         }
@@ -84,9 +97,9 @@ namespace ModelLibrary.Models
             }
         }
 
-        public ObservableCollection<KeyValuePair<string, string>> Parameters
+        public ObservableCollection<KeyValueCouple<string, string>> Parameters
         {
-            get { return parameters ?? (parameters = new ObservableCollection<KeyValuePair<string, string>>()); }
+            get { return parameters ?? (parameters = new ObservableCollection<KeyValueCouple<string, string>>()); }
             set
             {
                 if (parameters != value)

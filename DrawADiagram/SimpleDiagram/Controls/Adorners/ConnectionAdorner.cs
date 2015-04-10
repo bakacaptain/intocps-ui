@@ -6,6 +6,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using ModelLibrary.Models;
 using SimpleDiagram.Models;
 
 namespace SimpleDiagram.Controls.Adorners
@@ -130,10 +131,10 @@ namespace SimpleDiagram.Controls.Adorners
             {
                 if (connection != null)
                 {
-                    if (connection.Source == fixConnector)
-                        connection.Sink = this.HitConnector;
+                    if (connection.Source == fixConnector.Connector)
+                        connection.Sink = this.HitConnector.Connector;
                     else
-                        connection.Source = this.HitConnector;
+                        connection.Source = this.HitConnector.Connector;
                 }
             }
 
@@ -188,13 +189,13 @@ namespace SimpleDiagram.Controls.Adorners
         {
             PathGeometry geometry = new PathGeometry();
 
-            ConnectorOrientation targetOrientation;
+            Direction targetDirection;
             if (HitConnector != null)
-                targetOrientation = HitConnector.Orientation;
+                targetDirection = HitConnector.Connector.Type;
             else
-                targetOrientation = dragConnector.Orientation;
+                targetDirection = dragConnector.Connector.Type;
 
-            List<Point> linePoints = PathFinder.GetConnectionLine(fixConnector.GetInfo(), position, targetOrientation);
+            List<Point> linePoints = PathFinder.GetConnectionLine(fixConnector.GetInfo(), position, targetDirection);
 
             if (linePoints.Count > 0)
             {

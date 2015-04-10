@@ -9,10 +9,12 @@ namespace SimpleDiagram.Services
 {
     public class SimulationManager : ISimulationManager
     {
+        private readonly IModelManager modelManager;
         public event EventHandler OnConfigureRequest;
 
-        public SimulationManager()
+        public SimulationManager(IModelManager modelManager)
         {
+            this.modelManager = modelManager;
             // Initializing default eventhandler
             OnConfigureRequest += (sender, args) => { };
         }
@@ -22,11 +24,11 @@ namespace SimpleDiagram.Services
             OnConfigureRequest(this, null);
         }
 
-        public void ConfigureConnections(IEnumerable elements)
+        public void ConfigureConnections()
         {
             Console.WriteLine(@"Configuring connections");
-            var models = elements.OfType<BlockViewModel>().ToList();
-            var connections = elements.OfType<ConnectionViewModel>().ToList();
+            var models = modelManager.GetBlocks();
+            var connections = modelManager.GetConnections();
 
             var map = new Dictionary<Connector, Block>();
 
@@ -40,10 +42,18 @@ namespace SimpleDiagram.Services
 
             foreach (var connection in connections)
             {
-                var sink = connection.Sink.Connector;
-                var source = connection.Source.Connector;
-                Console.WriteLine("Connecting {0}.{1} with {2}.{3}\nCOE: {4} --> {5}", 
-                 map[source].Name, source.Name, map[sink].Name, sink.Name, source.Hook, sink.Hook);
+                var sink = connection.Sink;
+                var source = connection.Source;
+                if (sink != null && source != null)
+                {
+                    Console.WriteLine("Connecting {0}.{1} with {2}.{3}\nCOE: {4} --> {5}\n#:{6}",
+                        map[source].Name, source.Name, map[sink].Name, sink.Name, source.Hook, sink.Hook,connection.GetHashCode());
+                }
+                else
+                {
+                    Console.WriteLine("Sink: {0} Sourc: {1}\n#:{2}",sink,source,connection.GetHashCode());
+                }
+                
             }
         }
 

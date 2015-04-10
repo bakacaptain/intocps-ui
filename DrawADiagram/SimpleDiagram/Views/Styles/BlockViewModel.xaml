@@ -15,6 +15,7 @@
     </Style>
 
     <!-- ConnectorDecoratorTemplate Default Template -->
+    <!-- Unused and is overwritten by the template created in code -->
     <ControlTemplate x:Key="ConnectorDecoratorTemplate" TargetType="{x:Type Control}">
         <Grid>
             <m:ConnectorViewModel Orientation="Left" VerticalAlignment="Center" HorizontalAlignment="Left" />

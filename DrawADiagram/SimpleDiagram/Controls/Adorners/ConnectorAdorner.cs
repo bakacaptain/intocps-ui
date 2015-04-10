@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using ModelLibrary.Models;
 using SimpleDiagram.Models;
 
 namespace SimpleDiagram.Controls.Adorners
@@ -61,19 +62,16 @@ namespace SimpleDiagram.Controls.Adorners
             {
                 var sourceConnector = this.sourceConnector;
                 var sinkConnector = HitConnector;
-                var newConnection = new ConnectionViewModel(sourceConnector, sinkConnector);
-
-                // connections are added with z-index of zero
-                this.diagram.Add(newConnection, 0);
+                diagram.Add(sourceConnector, sinkConnector);
             }
             if (HitBlock != null)
             {
                 HitBlock.IsDragConnectionOver = false;
             }
 
-            if (this.IsMouseCaptured) this.ReleaseMouseCapture();
+            if (IsMouseCaptured) ReleaseMouseCapture();
 
-            AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(this.diagram);
+            AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(diagram);
             if (adornerLayer != null)
             {
                 adornerLayer.Remove(this);
@@ -110,13 +108,13 @@ namespace SimpleDiagram.Controls.Adorners
         {
             PathGeometry geometry = new PathGeometry();
 
-            ConnectorOrientation targetOrientation;
+            Direction targetDirection;
             if (HitConnector != null)
-                targetOrientation = HitConnector.Orientation;
+                targetDirection = HitConnector.Connector.Type;
             else
-                targetOrientation = ConnectorOrientation.None;
+                targetDirection = Direction.UNKNOWN;
 
-            List<Point> pathPoints = PathFinder.GetConnectionLine(sourceConnector.GetInfo(), position, targetOrientation);
+            List<Point> pathPoints = PathFinder.GetConnectionLine(sourceConnector.GetInfo(), position, targetDirection);
 
             if (pathPoints.Count > 0)
             {

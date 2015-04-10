@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -17,6 +19,7 @@ namespace ModelLibrary.Models
         /// The hook to the actual input called by the COE
         /// </summary>
         private string hook;
+        private ObservableCollection<Connection> connections; 
 
         public string Name
         {
@@ -81,6 +84,33 @@ namespace ModelLibrary.Models
                     OnPropertyChanged("Hook");
                 }
             }
+        }
+
+        public ObservableCollection<Connection> Connections
+        {
+            get { return connections; }
+            set
+            {
+                if (connections != value)
+                {
+                    if (connections == null)
+                    {
+                        connections = new ObservableCollection<Connection>();
+                    }
+                    else
+                    {
+                        connections.CollectionChanged -= ConnectionsChanged;
+                    }
+                    connections = value;
+                    connections.CollectionChanged += ConnectionsChanged;
+                    OnPropertyChanged("Connections");
+                }
+            }
+        }
+
+        private void ConnectionsChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            OnPropertyChanged("Connections");
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

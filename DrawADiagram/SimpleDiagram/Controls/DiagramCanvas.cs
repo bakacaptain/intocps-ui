@@ -14,6 +14,8 @@ namespace SimpleDiagram.Controls
         public DiagramCanvas()
         {
             AllowDrop = true;
+            OnModelCreate += _ => { };
+            OnConnectionAdded += _ => { };
         }
 
         /// <summary>
@@ -30,6 +32,7 @@ namespace SimpleDiagram.Controls
         }
 
         public Action<Point> OnModelCreate;
+        public Action<ConnectionViewModel> OnConnectionAdded;
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
@@ -153,9 +156,15 @@ namespace SimpleDiagram.Controls
             Add(element, Children.Count);
         }
 
+        public void Add(ConnectorViewModel source, ConnectorViewModel sink)
+        {
+            Add(new ConnectionViewModel(source.Connector, sink.Connector), 0);
+        }
+
         public void Add(ConnectionViewModel element, int index)
         {
             Children.Insert(index, element);
+            OnConnectionAdded(element);
         }
 
         public void Add(ConnectionViewModel element)

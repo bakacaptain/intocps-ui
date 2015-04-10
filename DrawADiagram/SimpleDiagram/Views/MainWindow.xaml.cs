@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -34,11 +33,12 @@ namespace SimpleDiagram.Views
             modelManager.OnModelRemoved += RemoveModel;
             modelManager.OnViewModelParameters += UpdateParams;
             DiagramCanvas.OnModelCreate += p => modelManager.CreateModel(p.X,p.Y);
+            DiagramCanvas.OnConnectionAdded += c => modelManager.AddConnection(c);
             simManager.OnConfigureRequest += (sender, args) =>
             {
-                simManager.ConfigureConnections(DiagramCanvas.Children);
+                simManager.ConfigureConnections();
             };
-            ConfigureCoeButton.Click += (sender, e) => { simManager.ConfigureConnections(DiagramCanvas.Children); };
+            ConfigureCoeButton.Click += (sender, e) => { simManager.ConfigureConnections(); };
 
             #region fillings
             Rectangle rect = new Rectangle
@@ -83,7 +83,7 @@ namespace SimpleDiagram.Views
                 new Connector(){Type = Direction.OUT},
             };
 
-            var block = new Block()
+            var block1 = new Block()
             {
                 Name = "Block1",
                 Position = new Point(60,100),
@@ -105,29 +105,16 @@ namespace SimpleDiagram.Views
 
             PropertyAdvisor.SetExternalToolParameter(block2.Parameters, "Overture", @"C:\Study\Overture\Overture.exe", @"C:\Users\Sam\Documents\Overture\workspace\Nested", "-import");
 
-            PropertyAdvisor.SetExternalToolParameter(block.Parameters, "Overture", @"C:\Study\Overture\Overture.exe", @"C:\Users\Sam\Documents\Overture\workspace\TestProject", "-import");
+            PropertyAdvisor.SetExternalToolParameter(block1.Parameters, "Overture", @"C:\Study\Overture\Overture.exe", @"C:\Users\Sam\Documents\Overture\workspace\TestProject", "-import");
 
             #endregion model
 
-            // Creating a new Block using dependency injection
-            var b1 = kernel.Get<BlockViewModel>();
-            b1.BlockModel = block;
-            b1.Content = grid;
-            b1.Height = 80;
-            b1.Width = 120;
-
-            var b2 = kernel.Get<BlockViewModel>();
-            b2.BlockModel = block2;
-            b2.Content = grid2;
-            b2.Height = 80;
-            b2.Width = 80;
+            // Creating a new Block using the manager
+            modelManager.CreateModel(block1);
+            modelManager.CreateModel(block2);
 
             //TODO: bind to the model instead of the viewmodel of the connector
             //var connection = new ConnectionViewModel(connectorIn, connectorOut);
-
-            modelManager.AddModel(b2);
-
-            modelManager.AddModel(b1);
         }
 
         private void AddModel(object sender, BlockViewModel model)
@@ -138,16 +125,25 @@ namespace SimpleDiagram.Views
         private void UpdateParams(object sender, BlockViewModel model)
         {
             TabControl.SelectedIndex = 1;
-            var bind = new Binding
+            var displayNameBind = new Binding
             {
                 Source = model,
                 Path = new PropertyPath("BlockModel.Name"),
                 Mode = BindingMode.TwoWay
             };
 
-            ParamDisplayName.SetBinding(TextBox.TextProperty, bind);
+            var versionBind = new Binding
+            {
+                Source = model,
+                Path = new PropertyPath("BlockModel.Version"),
+                Mode = BindingMode.OneWay
+            };
+
+            ParamDisplayName.SetBinding(TextBox.TextProperty, displayNameBind);
+            ParamModelVersion.SetBinding(ContentProperty, versionBind);
 
             ParamList.ItemsSource = model.BlockModel.Parameters;
+            IOList.ItemsSource = model.BlockModel.Connectors;
         }
 
         private void RemoveModel(object sender, BlockViewModel model)
