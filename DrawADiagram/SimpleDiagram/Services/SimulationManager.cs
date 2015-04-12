@@ -42,8 +42,8 @@ namespace SimpleDiagram.Services
 
             foreach (var connection in connections)
             {
-                var sink = connection.Sink;
-                var source = connection.Source;
+                var sink = connection.Sink.Connector;
+                var source = connection.Source.Connector;
                 if (sink != null && source != null)
                 {
                     Console.WriteLine("Connecting {0}.{1} with {2}.{3}\nCOE: {4} --> {5}\n#:{6}",

@@ -158,7 +158,7 @@ namespace SimpleDiagram.Controls
 
         public void Add(ConnectorViewModel source, ConnectorViewModel sink)
         {
-            Add(new ConnectionViewModel(source.Connector, sink.Connector), 0);
+            Add(new ConnectionViewModel(source, sink), 0);
         }
 
         public void Add(ConnectionViewModel element, int index)

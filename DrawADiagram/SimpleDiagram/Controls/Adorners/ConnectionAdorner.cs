@@ -131,10 +131,10 @@ namespace SimpleDiagram.Controls.Adorners
             {
                 if (connection != null)
                 {
-                    if (connection.Source == fixConnector.Connector)
-                        connection.Sink = this.HitConnector.Connector;
+                    if (connection.Source == fixConnector)
+                        connection.Sink = this.HitConnector;
                     else
-                        connection.Source = this.HitConnector.Connector;
+                        connection.Source = this.HitConnector;
                 }
             }
 

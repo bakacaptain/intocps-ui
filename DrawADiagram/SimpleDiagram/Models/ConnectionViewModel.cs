@@ -36,8 +36,8 @@ namespace SimpleDiagram.Models
         }
 
         // source connector
-        private Connector source;
-        public Connector Source
+        private ConnectorViewModel source;
+        public ConnectorViewModel Source
         {
             get
             {
@@ -50,14 +50,14 @@ namespace SimpleDiagram.Models
                     if (source != null)
                     {
                         source.PropertyChanged -= OnConnectorPositionChanged;
-                        source.Connections.Remove(Model);
+                        source.Connections.Remove(this);
                     }
 
                     source = value;
 
                     if (source != null)
                     {
-                        source.Connections.Add(Model);
+                        source.Connections.Add(this);
                         source.PropertyChanged += OnConnectorPositionChanged;
                     }
 
@@ -67,8 +67,8 @@ namespace SimpleDiagram.Models
         }
 
         // sink connector
-        private Connector sink;
-        public Connector Sink
+        private ConnectorViewModel sink;
+        public ConnectorViewModel Sink
         {
             get { return sink; }
             set
@@ -78,14 +78,14 @@ namespace SimpleDiagram.Models
                     if (sink != null)
                     {
                         sink.PropertyChanged -= OnConnectorPositionChanged;
-                        sink.Connections.Remove(model);
+                        sink.Connections.Remove(this);
                     }
 
                     sink = value;
 
                     if (sink != null)
                     {
-                        sink.Connections.Add(model);
+                        sink.Connections.Add(this);
                         sink.PropertyChanged += OnConnectorPositionChanged;
                     }
                     UpdatePathGeometry();
@@ -253,7 +253,7 @@ namespace SimpleDiagram.Models
 
         #endregion
 
-        public ConnectionViewModel(Connector source, Connector sink)
+        public ConnectionViewModel(ConnectorViewModel source, ConnectorViewModel sink)
         {
             this.Source = source;
             this.Sink = sink;
@@ -311,7 +311,7 @@ namespace SimpleDiagram.Models
             if (Source != null && Sink != null)
             {
                 PathGeometry geometry = new PathGeometry();
-                List<Point> linePoints = PathFinder.GetConnectionLine(Source, Sink, true);
+                List<Point> linePoints = PathFinder.GetConnectionLine(Source.GetInfo(), Sink.GetInfo(), true);
                 if (linePoints.Count > 0)
                 {
                     PathFigure figure = new PathFigure();

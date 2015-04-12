@@ -30,7 +30,7 @@ namespace SimpleDiagram.Models
         private void Connector_LayoutUpdated(object sender, EventArgs e)
         {
             var diagram = GetDiagramCanvas(this);
-            if (diagram != null)
+            if (diagram != null && Connector != null)
             {
                 //get centre position of this Connector relative to the DesignerCanvas
                 Connector.Position = TransformToAncestor(diagram).Transform(new Point(Width/2, Height/2));
