@@ -191,14 +191,9 @@ namespace SimpleDiagram.Services
             newConnector.Hook = "N/A";
             model.BlockModel.Connectors.Add(newConnector);
         }
-
         public void AddConnection(ConnectionViewModel connection)
         {
             connectionViewModels.Add(connection);
-            connection.Sink.PropertyChanged += (sender, args) =>
-            {
-                Console.WriteLine("Property changed");
-            };
         }
 
         public void RemoveConnection(ConnectionViewModel connection)

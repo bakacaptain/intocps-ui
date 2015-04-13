@@ -49,7 +49,7 @@ namespace SimpleDiagram.Models
                 {
                     if (source != null)
                     {
-                        source.PropertyChanged -= OnConnectorPositionChanged;
+                        source.Connector.PropertyChanged -= OnConnectorPositionChanged;
                         source.Connections.Remove(this);
                     }
 
@@ -58,7 +58,7 @@ namespace SimpleDiagram.Models
                     if (source != null)
                     {
                         source.Connections.Add(this);
-                        source.PropertyChanged += OnConnectorPositionChanged;
+                        source.Connector.PropertyChanged += OnConnectorPositionChanged;
                     }
 
                     UpdatePathGeometry();
@@ -77,7 +77,7 @@ namespace SimpleDiagram.Models
                 {
                     if (sink != null)
                     {
-                        sink.PropertyChanged -= OnConnectorPositionChanged;
+                        sink.Connector.PropertyChanged -= OnConnectorPositionChanged;
                         sink.Connections.Remove(this);
                     }
 
@@ -86,7 +86,7 @@ namespace SimpleDiagram.Models
                     if (sink != null)
                     {
                         sink.Connections.Add(this);
-                        sink.PropertyChanged += OnConnectorPositionChanged;
+                        sink.Connector.PropertyChanged += OnConnectorPositionChanged;
                     }
                     UpdatePathGeometry();
                 }
@@ -304,6 +304,11 @@ namespace SimpleDiagram.Models
             {
                 UpdatePathGeometry();
             }
+        }
+
+        public void UpdateConnectionLayout()
+        {
+            UpdatePathGeometry();
         }
 
         private void UpdatePathGeometry()

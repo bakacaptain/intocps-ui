@@ -16,10 +16,6 @@ namespace SimpleDiagram.Models
 {
     public class ConnectorViewModel : Control, INotifyPropertyChanged
     {
-        #region Properties
-        
-        #endregion
-
         public ConnectorViewModel()
         {
             LayoutUpdated += Connector_LayoutUpdated;
@@ -133,7 +129,20 @@ namespace SimpleDiagram.Models
             get { return connections ?? (connections = new List<ConnectionViewModel>()); }
         }
 
-        public Connector Connector { get; set; }
+        private Connector connector;
+
+        public Connector Connector 
+        {
+            get { return connector; }
+            set
+            {
+                if (value != null)
+                {
+                    //TODO: hack to guard against setting to null when layout is reloaded
+                    connector = value;
+                }
+            }
+        }
 
         private BlockViewModel parentContianer;
 
