@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -7,6 +9,8 @@ using System.Windows.Shapes;
 using ModelLibrary.Models;
 using ModelLibrary.Utils;
 using Ninject;
+using OxyPlot;
+using OxyPlot.Series;
 using SimpleDiagram.Bootstrap;
 using SimpleDiagram.Models;
 using SimpleDiagram.Services;
@@ -28,6 +32,7 @@ namespace SimpleDiagram.Views
 
             InitializeComponent();
             ParamList.ItemsSource = new Dictionary<string, string>();
+            
 
             modelManager.OnModelAdded += AddModel;
             modelManager.OnModelRemoved += RemoveModel;
@@ -39,6 +44,28 @@ namespace SimpleDiagram.Views
                 simManager.ConfigureConnections();
             };
             ConfigureCoeButton.Click += (sender, e) => { simManager.ConfigureConnections(); };
+            LoadResultItemsButton.Click += (sender, e) =>
+            {
+                var blocks = modelManager.GetBlocks();
+                var models = new ObservableCollection<ResultItemModel>();
+                foreach (var block in blocks)
+                {
+                    foreach (var connector in block.BlockModel.Connectors)
+                    {
+                        models.Add(new ResultItemModel
+                        {
+                            Connector = connector,
+                            ParentModelName = block.BlockModel.Name,
+                            //TODO: include first axis label and second axis
+                        });
+                    }
+                }
+                WatchableResultVar.ItemsSource = models;
+
+            
+                ResultsViewModel.Results = new PlotModel { Title = "Test Graph" };
+                ResultsViewModel.Results.Series.Add(new FunctionSeries(Math.Sin, 0, 10, 0.1, "sin(x)"));
+            };
 
             #region fillings
             Rectangle rect = new Rectangle

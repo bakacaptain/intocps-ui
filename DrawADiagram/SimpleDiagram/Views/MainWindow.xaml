@@ -15,7 +15,7 @@
         </ResourceDictionary>
     </Window.Resources>
     <Window.DataContext>
-        <m:ResultsViewModel />
+        <m:ResultsViewModel x:Name="ResultsViewModel" />
     </Window.DataContext>
     <Grid Margin="10">
         <Grid.ColumnDefinitions>
@@ -102,7 +102,27 @@
                 </ScrollViewer>
             </TabItem>
             <TabItem x:Name="ResultTab" Header="Results" TabIndex="2">
-                <v:PlotView Model="{Binding Results}" />
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel Orientation="Vertical" Width="180">
+                        <Button Content="Temporary reload button" x:Name="LoadResultItemsButton" />
+                        <Label Content="Input / Outputs" />
+                        <ComboBox x:Name="WatchableResultVar" ItemsSource="{Binding Watchables}" DisplayMemberPath="DisplayName" />
+                        <Button Content="Add" />
+                        <Label Content="Displayed" />
+                        <ScrollViewer MinHeight="128">
+                            <ListBox x:Name="WatchedResultVar" ItemsSource="{Binding Watched,Mode=OneWay}">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Label Content="{Binding DisplayName}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </ScrollViewer>
+                    </StackPanel>
+                    <v:PlotView Model="{Binding Results}" MinWidth="300" MinHeight="300"/>
+                </StackPanel>
             </TabItem>
         </TabControl>
         
