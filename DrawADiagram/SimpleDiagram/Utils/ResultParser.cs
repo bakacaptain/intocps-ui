@@ -15,6 +15,7 @@ namespace SimpleDiagram.Utils
         /// <param name="colSplitter">A method to split the points into datapoints</param>
         /// <returns></returns>
         IEnumerable<DataPoint> Parse(string filepath, Func<string,IEnumerable<string>> rowSplitter, Func<string, DataPoint> colSplitter);
+        IEnumerable<DataPoint> Parse(string filepath, Func<string, IEnumerable<string>> rowSplitter, Func<string, DataPoint> colSplitter, string xHeader, string yHeader);
     }
 
     /// <summary>
@@ -34,6 +35,19 @@ namespace SimpleDiagram.Utils
             var file = reader.Read(filepath);
 
             var rows = rowSplitter(file);
+            return rows.Select(colSplitter).ToList();
+        }
+
+        public IEnumerable<DataPoint> Parse(string filepath, Func<string, IEnumerable<string>> rowSplitter, Func<string, DataPoint> colSplitter, string xHeader, string yHeader)
+        {
+            var file = reader.Read(filepath);
+
+            var rows = rowSplitter(file).ToList();
+            var headers = rows.Take(1).Select(colSplitter).ToList();
+            for (var i = 0; i < headers.Count; i++)
+            {
+                //TODO: custom splitting
+            }
             return rows.Select(colSplitter).ToList();
         }
     }

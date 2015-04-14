@@ -2,7 +2,6 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:c="clr-namespace:SimpleDiagram.Controls"
-        xmlns:m="clr-namespace:SimpleDiagram.Models"
         xmlns:v="http://oxyplot.org/wpf"
         Title="INTO-CPS" Height="480" Width="720">
     <Window.Resources>
@@ -14,9 +13,6 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
-    <Window.DataContext>
-        <m:ResultsViewModel x:Name="ResultsViewModel" />
-    </Window.DataContext>
     <Grid Margin="10">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="100" />
@@ -27,6 +23,8 @@
         <StackPanel Grid.Column="0" Margin="0,0,5,0">
             <Expander Header="Symbols" Content="{StaticResource ToolStencils}" IsExpanded="True" />
             <Button Content="Configure" x:Name="ConfigureCoeButton" />
+            <Button Content="Co-simulate" x:Name="CosimulationButton" />
+            <Button Content="Stop simulation" x:Name="StopSimulationButton" />
         </StackPanel>
 
         <!-- GridSplitter -->
@@ -63,7 +61,7 @@
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal">
                                         <Label Content="{Binding Key}" Height="22" FontSize="10" />
-                                        <TextBox Text="{Binding Value, Mode=TwoWay}" Height="22" FontSize="10" />
+                                        <TextBox Text="{Binding Value, Mode=TwoWay}" Height="22" FontSize="10" MinWidth="50" />
                                     </StackPanel>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
@@ -87,13 +85,13 @@
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
                                         <Label Content="Name" Grid.Row="0" Grid.Column="0" Height="22" FontSize="10" />
-                                        <TextBox Text="{Binding Name, Mode=TwoWay}"  Grid.Row="0" Grid.Column="1" Height="22" FontSize="10" />
+                                        <TextBox Text="{Binding Name, Mode=TwoWay}"  Grid.Row="0" Grid.Column="1" Height="22" FontSize="10" MinWidth="30" />
                                         <Label Content="Type" Grid.Row="0" Grid.Column="2" Height="22" FontSize="10" />
                                         <Label Content="{Binding Type}" Grid.Row="0" Grid.Column="3" Height="22" FontSize="10" />
                                         <Label Content="Unit Type" Grid.Row="0" Grid.Column="4" Height="22" FontSize="10" />
-                                        <TextBox Text="{Binding UnitType,Mode=TwoWay}" Grid.Row="0" Grid.Column="5" Height="22" FontSize="10" />
+                                        <TextBox Text="{Binding UnitType,Mode=TwoWay}" Grid.Row="0" Grid.Column="5" Height="22" FontSize="10" MinWidth="30" />
                                         <Label Content="External Hook" Grid.Column="6" Height="22" FontSize="10" />
-                                        <TextBox Text="{Binding Hook,Mode=TwoWay}" Grid.Column="7" Height="22" FontSize="10" />
+                                        <TextBox Text="{Binding Hook,Mode=TwoWay}" Grid.Column="7" Height="22" FontSize="10" MinWidth="30" />
                                     </Grid>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
@@ -101,28 +99,22 @@
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
-            <TabItem x:Name="ResultTab" Header="Results" TabIndex="2">
+            <TabItem x:Name="CoSimTab" Header="Co-simulation" TabIndex="2">
                 <StackPanel Orientation="Horizontal">
                     <StackPanel Orientation="Vertical" Width="180">
-                        <Button Content="Temporary reload button" x:Name="LoadResultItemsButton" />
                         <Label Content="Input / Outputs" />
-                        <ComboBox x:Name="WatchableResultVar" ItemsSource="{Binding Watchables}" DisplayMemberPath="DisplayName" />
-                        <Button Content="Add" />
+                        <ComboBox x:Name="NotWatchedResultVar" DisplayMemberPath="DisplayName" />
+                        <Button Content="Add" x:Name="AddWatchableResultVarButton"/>
                         <Label Content="Displayed" />
                         <ScrollViewer MinHeight="128">
-                            <ListBox x:Name="WatchedResultVar" ItemsSource="{Binding Watched,Mode=OneWay}">
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <Label Content="{Binding DisplayName}" />
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
+                            <ListBox x:Name="WatchedResultVar" DisplayMemberPath="DisplayName" />
                         </ScrollViewer>
                     </StackPanel>
-                    <v:PlotView Model="{Binding Results}" MinWidth="300" MinHeight="300"/>
+                    <v:PlotView x:Name="PlotView" MinWidth="400" MinHeight="200"/>
                 </StackPanel>
+            </TabItem>
+            <TabItem x:Name="DSETab" Header="Design Space Exploration" TabIndex="3">
+                
             </TabItem>
         </TabControl>
         

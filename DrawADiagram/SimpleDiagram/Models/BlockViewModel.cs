@@ -132,6 +132,12 @@ namespace SimpleDiagram.Models
             ModelManager.DisplayParameters(this);
         }
 
+        protected override void OnMouseDoubleClick(MouseButtonEventArgs e)
+        {
+            base.OnMouseDoubleClick(e);
+            ModelManager.DisplayParameters(this);
+        }
+
         #endregion View events
 
         #region Events

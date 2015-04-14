@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Media;
-using System.Windows.Shapes;
+using System.Windows.Input;
 using ModelLibrary.Models;
 using ModelLibrary.Utils;
 using Ninject;
-using OxyPlot;
-using OxyPlot.Series;
 using SimpleDiagram.Bootstrap;
 using SimpleDiagram.Models;
 using SimpleDiagram.Services;
@@ -32,7 +27,10 @@ namespace SimpleDiagram.Views
 
             InitializeComponent();
             ParamList.ItemsSource = new Dictionary<string, string>();
-            
+            PlotView.Model = simManager.Results;
+
+            var watchedBind = new Binding {Source = simManager,Path = new PropertyPath("Watched"),Mode=BindingMode.OneWay};
+            WatchedResultVar.SetBinding(ListBox.ItemsSourceProperty, watchedBind);
 
             modelManager.OnModelAdded += AddModel;
             modelManager.OnModelRemoved += RemoveModel;
@@ -43,71 +41,41 @@ namespace SimpleDiagram.Views
             {
                 simManager.ConfigureConnections();
             };
-            ConfigureCoeButton.Click += (sender, e) => { simManager.ConfigureConnections(); };
-            LoadResultItemsButton.Click += (sender, e) =>
+
+            ConfigureCoeButton.Click += (sender, e) =>
             {
-                var blocks = modelManager.GetBlocks();
-                var models = new ObservableCollection<ResultItemModel>();
-                foreach (var block in blocks)
+                simManager.ConfigureConnections();
+                NotWatchedResultVar.ItemsSource = simManager.NotWatched;
+            };
+            AddWatchableResultVarButton.Click += (sender, e) =>
+            {
+                var item = NotWatchedResultVar.SelectedValue as ConfigurationItemModel;
+                if (item != null)
                 {
-                    foreach (var connector in block.BlockModel.Connectors)
-                    {
-                        models.Add(new ResultItemModel
-                        {
-                            Connector = connector,
-                            ParentModelName = block.BlockModel.Name,
-                            //TODO: include first axis label and second axis
-                        });
-                    }
+                    simManager.WatchVariable(item);
+                    NotWatchedResultVar.ItemsSource = simManager.NotWatched;           
                 }
-                WatchableResultVar.ItemsSource = models;
-
-            
-                ResultsViewModel.Results = new PlotModel { Title = "Test Graph" };
-                ResultsViewModel.Results.Series.Add(new FunctionSeries(Math.Sin, 0, 10, 0.1, "sin(x)"));
             };
-
-            #region fillings
-            Rectangle rect = new Rectangle
+            WatchedResultVar.KeyDown += (sender, e) =>
             {
-                Fill = Brushes.White,
-                Stroke = Brushes.Black,
-                IsHitTestVisible = false
+                if (e.Key == Key.Delete)
+                {
+                    var item = WatchedResultVar.SelectedValue as ConfigurationItemModel;
+                    simManager.UnWatchVariable(item);
+                    NotWatchedResultVar.ItemsSource = simManager.NotWatched;  
+                }
             };
-
-            Grid grid = new Grid();
-            grid.Children.Add(rect);
-            grid.Children.Add(new TextBlock()
-            {
-                Text = "<<Block>>",
-                IsHitTestVisible = false
-            });
-
-
-            var rect2 = new Rectangle
-            {
-                Fill = Brushes.White,
-                Stroke = Brushes.Black,
-                IsHitTestVisible = false
-            };
-
-            var grid2 = new Grid();
-            grid2.Children.Add(rect2);
-            grid2.Children.Add(new TextBlock()
-            {
-                Text = "<<Block>>",
-                IsHitTestVisible = false
-            });
-            #endregion fillings
+            CosimulationButton.Click += (sender, e) => { simManager.Cosimulate(); };
+            StopSimulationButton.Click += (sender, e) => { simManager.StopSimulation(); };
 
             #region model
 
-            var connectorOut = new Connector(){Type = Direction.OUT};
+            var connector2 = new Connector(){Type = Direction.OUT, Name = "C2"};
             var connectors = new PropertyObservingCollection<Connector>()
             {
-                new Connector(){Type = Direction.IN},
-                connectorOut,
-                new Connector(){Type = Direction.OUT},
+                new Connector(){Type = Direction.IN, Name = "C1"},
+                connector2,
+                new Connector(){Type = Direction.OUT, Name = "C3"},
             };
 
             var block1 = new Block()
@@ -117,22 +85,27 @@ namespace SimpleDiagram.Views
                 Connectors = connectors
             };
 
-            var connectorIn = new Connector() {Type = Direction.IN};
-            var c2 = new PropertyObservingCollection<Connector>()
+            var connector4 = new Connector() {Type = Direction.IN, Name="C4"};
+            var connectors2 = new PropertyObservingCollection<Connector>()
             {
-                connectorIn
+                connector4
             };
 
             var block2 = new Block()
             {
                 Name = "Block2",
                 Position = new Point(300, 100),
-                Connectors = c2
+                Connectors = connectors2
             };
 
+            var selected = "Overture";
+            PropertyAdvisor.SetSelectedExternalToolParameter(block2.Parameters, selected);
             PropertyAdvisor.SetExternalToolParameter(block2.Parameters, "Overture", @"C:\Study\Overture\Overture.exe", @"C:\Users\Sam\Documents\Overture\workspace\Nested", "-import");
+            PropertyAdvisor.SetExternalResultLocationParameter(block2.Parameters, selected, @"C:\Users\Sam\Desktop\data2.csv");
 
+            PropertyAdvisor.SetSelectedExternalToolParameter(block1.Parameters, selected);
             PropertyAdvisor.SetExternalToolParameter(block1.Parameters, "Overture", @"C:\Study\Overture\Overture.exe", @"C:\Users\Sam\Documents\Overture\workspace\TestProject", "-import");
+            PropertyAdvisor.SetExternalResultLocationParameter(block1.Parameters, selected, @"C:\Users\Sam\Desktop\data.csv");
 
             #endregion model
 

@@ -89,6 +89,7 @@
     <Compile Include="Factories\IConnectorFactory.cs" />
     <Compile Include="Factories\IModelFactory.cs" />
     <Compile Include="Factories\XamlFactory.cs" />
+    <Compile Include="Models\ConfigurationItemModel.cs" />
     <Compile Include="Models\ConnectionViewModel.cs" />
     <Compile Include="Models\ConnectorViewModel.cs" />
     <Compile Include="Models\BlockViewModel.cs" />
@@ -132,7 +133,6 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Models\ResultsViewModel.cs" />
     <Compile Include="Services\IModelManager.cs" />
     <Compile Include="Services\ISimulationManager.cs" />
     <Compile Include="Services\ModelManager.cs" />
