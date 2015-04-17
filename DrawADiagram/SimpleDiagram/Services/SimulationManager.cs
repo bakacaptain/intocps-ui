@@ -4,6 +4,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using Castle.Core.Internal;
 using ModelLibrary.Annotations;
 using OxyPlot;
@@ -19,18 +21,42 @@ namespace SimpleDiagram.Services
         private readonly IResultUpdater resultUpdater;
         public event EventHandler OnConfigureRequest;
         public event EventHandler OnPlotUpdated;
+        public event EventHandler OnSimulationEnd;
 
+        #region Properties
         private bool isRunning;
+
+        public double DseProgress { get; private set; }
+
+        public double CosimProgress { get; private set; }
+
+        public PlotModel Results { get; private set; }
+
+        public ObservableCollection<ConfigurationItemModel> Watchable { get; private set; }
+
+        public List<ConfigurationItemModel> NotWatched
+        {
+            get { return Watchable.Where(item => !Watched.Any(x => x.Parent == item.Parent && x.Connector == item.Connector)).ToList(); }
+        }
+
+        public ObservableCollection<ConfigurationItemModel> Watched { get; private set; }
+
+        public ObservableCollection<DSEConfigurationItemModel> DSEParameters { get; private set; }
+        #endregion
 
         public SimulationManager(IModelManager modelManager, IResultUpdater resultUpdater)
         {
             isRunning = false;
             Results = new PlotModel();
+            Results.Series.Add(new LineSeries());
+            DseProgress = 0;
+            CosimProgress = 0;
 
             Watched = new ObservableCollection<ConfigurationItemModel>();
-            Watchable = new List<ConfigurationItemModel>();
+            Watchable = new ObservableCollection<ConfigurationItemModel>();
+            DSEParameters = new ObservableCollection<DSEConfigurationItemModel>();
 
-            Watched.CollectionChanged += (sender, e) => { UpdateConfiguration(); };
+            //Watched.CollectionChanged += (sender, e) => { UpdateConfiguration(); };
 
             this.modelManager = modelManager;
             this.resultUpdater = resultUpdater;
@@ -38,6 +64,7 @@ namespace SimpleDiagram.Services
             // Initializing default eventhandler
             OnConfigureRequest += (sender, args) => { };
             OnPlotUpdated += (sender, series) => { };
+            OnSimulationEnd += (sender, e) => { };
 
             resultUpdater.OnResultsChanged += (sender, series) =>
             {
@@ -115,7 +142,7 @@ namespace SimpleDiagram.Services
                 }
             }
 
-            Watchable = map.Values;
+            Watchable = map.Values.ToObservableCollection();
         }
 
         public void WatchVariable(ConfigurationItemModel item)
@@ -136,18 +163,17 @@ namespace SimpleDiagram.Services
             OnPropertyChanged("Watched");
         }
 
-        public PlotModel Results { get; private set; }
-
-        public IEnumerable<ConfigurationItemModel> Watchable { get; private set; }
-
-        public List<ConfigurationItemModel> NotWatched
+        public void AddDesignSpaceParameter(DSEConfigurationItemModel item)
         {
-            get { return Watchable.Where(item => !Watched.Any(x => x.Parent == item.Parent && x.Connector == item.Connector)).ToList(); }
+            DSEParameters.Add(item);
+            OnPropertyChanged("DSEParameters");
         }
 
-        public ObservableCollection<ConfigurationItemModel> Watched { get; private set; } 
-
-        
+        public void RemoveDesignSpaceParameter(DSEConfigurationItemModel item)
+        {
+            DSEParameters.Remove(item);
+            OnPropertyChanged("DSEParameters");
+        }
 
         public void StopSimulation()
         {
@@ -155,6 +181,7 @@ namespace SimpleDiagram.Services
             {
                 resultUpdater.StopWatching();
                 IsRunning = false;
+                OnSimulationEnd(this, null);
             }
         }
 
@@ -165,6 +192,8 @@ namespace SimpleDiagram.Services
             IsRunning = true;
 
             //TODO: open simulation
+            UpdateConfiguration();
+            FakeCoSimProgress(10000);
         }
 
         private void UpdateConfiguration()
@@ -193,7 +222,63 @@ namespace SimpleDiagram.Services
 
         public void DesignSpaceExplore()
         {
-            throw new NotImplementedException();
+            if (IsRunning) return;
+
+            IsRunning = true;
+            //TODO: start DSE
+            
+            FakeDesignSpaceExplorationProgress(10000);
+        }
+
+        private void FakeDesignSpaceExplorationProgress(int duration)
+        {
+            const double epsilon = 0.005;
+            const int step = 50;
+
+
+            var task = Task.Factory.StartNew(() =>
+            {
+                DseProgress = 0;
+                OnPropertyChanged("DseProgress");
+                double stop = duration;
+                double counter = 0;
+                while (stop - counter > epsilon)
+                {
+                    DseProgress = (counter/stop)*100;
+                    OnPropertyChanged("DseProgress");
+                    counter += step;
+                    Thread.Sleep(step);
+                }
+                DseProgress = 100;
+                OnPropertyChanged("DseProgress");
+
+                StopSimulation();
+            });
+        }
+
+        private void FakeCoSimProgress(int duration)
+        {
+            const double epsilon = 0.005;
+            const int step = 50;
+
+            var task = Task.Factory.StartNew(() =>
+            {
+                CosimProgress = 0;
+                OnPropertyChanged("CosimProgress");
+                double stop = duration;
+                double counter = 0;
+                while (stop - counter > epsilon)
+                {
+                    CosimProgress = (counter/stop)*100;
+                    OnPropertyChanged("CosimProgress");
+                    counter += step;
+                    Thread.Sleep(step);
+                }
+                CosimProgress = 100;
+                OnPropertyChanged("CosimProgress");
+
+                StopSimulation();
+            });
         }
 
         #region Property changed

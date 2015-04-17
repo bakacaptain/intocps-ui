@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using Newtonsoft.Json;
@@ -42,5 +44,21 @@ namespace SimpleDiagram.Utils
             }
             return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(source));
         }
+
+        /// <summary>
+        /// Transforms from an enumerable to ObservableCollection
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static ObservableCollection<T> ToObservableCollection<T>(this IEnumerable<T> source)
+        {
+            var collection = new ObservableCollection<T>();
+            foreach (var item in source)
+            {
+                collection.Add(item);
+            }
+            return collection;
+        } 
     }
 }

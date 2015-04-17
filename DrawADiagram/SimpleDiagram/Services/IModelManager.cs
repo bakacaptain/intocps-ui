@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using ModelLibrary.Models;
 using SimpleDiagram.Models;
@@ -30,6 +29,8 @@ namespace SimpleDiagram.Services
         /// Raised when parameters for the need to be displayed
         /// </summary>
         event EventHandler<BlockViewModel> OnViewModelParameters;
+
+        event EventHandler OnEntitiesUpdated;
 
         void CreateModel(double x, double y);
         void CreateModel(Block block);

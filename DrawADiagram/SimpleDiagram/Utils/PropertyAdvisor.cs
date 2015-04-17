@@ -88,7 +88,7 @@ namespace SimpleDiagram.Utils
 
         public static string GetSelectedExternalToolParameter(ICollection<KeyValueCouple<string, string>> collection)
         {
-            var selectedTool = collection.First(pair => pair.Key == SELECTED);
+            var selectedTool = collection.FirstOrDefault(pair => pair.Key == SELECTED);
             return (selectedTool != null) ? selectedTool.Value : null;
         }
 

@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:c="clr-namespace:SimpleDiagram.Controls"
         xmlns:v="http://oxyplot.org/wpf"
-        Title="INTO-CPS" Height="480" Width="720">
+        Title="INTO-CPS" Height="768" Width="989">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -13,29 +13,30 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
-    <Grid Margin="10">
+    <Grid Margin="10" DockPanel.Dock="Top" MinHeight="548">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="100" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
         <!-- Toolbox -->
-        <StackPanel Grid.Column="0" Margin="0,0,5,0">
+        <StackPanel Grid.Column="0" Margin="0,0,5,0" Grid.Row="0">
             <Expander Header="Symbols" Content="{StaticResource ToolStencils}" IsExpanded="True" />
-            <Button Content="Configure" x:Name="ConfigureCoeButton" />
-            <Button Content="Co-simulate" x:Name="CosimulationButton" />
-            <Button Content="Stop simulation" x:Name="StopSimulationButton" />
         </StackPanel>
 
         <!-- GridSplitter -->
         <GridSplitter Focusable="False" Width="2" Background="{StaticResource LightBorderBrush}"
                     VerticalAlignment="Stretch" HorizontalAlignment="Right"/>
         <!-- Designer -->
-        <TabControl x:Name="TabControl" Grid.Column="1">
+        <TabControl x:Name="TabControl" Grid.Column="1" Grid.Row="0" Height="548">
             <TabItem x:Name="DiagramTab" Header="Diagram" IsSelected="True" TabIndex="0">
-                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                        <c:DiagramCanvas x:Name="DiagramCanvas" Background="Transparent" />
-                    </ScrollViewer>
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                    <c:DiagramCanvas x:Name="DiagramCanvas" Background="Transparent" />
+                </ScrollViewer>
             </TabItem>
             <TabItem x:Name="ParamTab" Header="Parameters" TabIndex="1">
                 <ScrollViewer>
@@ -66,7 +67,7 @@
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
-                        <Label Content="IO" FontStyle="Oblique" />
+                        <Label Content="Shared variables" FontStyle="Oblique" />
                         <ListBox x:Name="IOList">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
@@ -83,15 +84,19 @@
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
                                         <Label Content="Name" Grid.Row="0" Grid.Column="0" Height="22" FontSize="10" />
                                         <TextBox Text="{Binding Name, Mode=TwoWay}"  Grid.Row="0" Grid.Column="1" Height="22" FontSize="10" MinWidth="30" />
                                         <Label Content="Type" Grid.Row="0" Grid.Column="2" Height="22" FontSize="10" />
                                         <Label Content="{Binding Type}" Grid.Row="0" Grid.Column="3" Height="22" FontSize="10" />
-                                        <Label Content="Unit Type" Grid.Row="0" Grid.Column="4" Height="22" FontSize="10" />
-                                        <TextBox Text="{Binding UnitType,Mode=TwoWay}" Grid.Row="0" Grid.Column="5" Height="22" FontSize="10" MinWidth="30" />
-                                        <Label Content="External Hook" Grid.Column="6" Height="22" FontSize="10" />
-                                        <TextBox Text="{Binding Hook,Mode=TwoWay}" Grid.Column="7" Height="22" FontSize="10" MinWidth="30" />
+                                        <Label Content="Data Type" Grid.Row="0" Grid.Column="4" Height="22" FontSize="10" />
+                                        <TextBox Text="{Binding DataType,Mode=TwoWay}" Grid.Row="0" Grid.Column="5" Height="22" FontSize="10" MinWidth="30" />
+                                        <Label Content="Unit Type" Grid.Row="0" Grid.Column="6" Height="22" FontSize="10" />
+                                        <TextBox Text="{Binding UnitType,Mode=TwoWay}" Grid.Row="0" Grid.Column="7" Height="22" FontSize="10" MinWidth="30" />
+                                        <Label Content="FMI function" Grid.Column="8" Height="22" FontSize="10" />
+                                        <TextBox Text="{Binding Hook,Mode=TwoWay}" Grid.Column="9" Height="22" FontSize="10" MinWidth="30" />
                                     </Grid>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
@@ -100,23 +105,162 @@
                 </ScrollViewer>
             </TabItem>
             <TabItem x:Name="CoSimTab" Header="Co-simulation" TabIndex="2">
-                <StackPanel Orientation="Horizontal">
-                    <StackPanel Orientation="Vertical" Width="180">
-                        <Label Content="Input / Outputs" />
-                        <ComboBox x:Name="NotWatchedResultVar" DisplayMemberPath="DisplayName" />
-                        <Button Content="Add" x:Name="AddWatchableResultVarButton"/>
-                        <Label Content="Displayed" />
-                        <ScrollViewer MinHeight="128">
-                            <ListBox x:Name="WatchedResultVar" DisplayMemberPath="DisplayName" />
-                        </ScrollViewer>
+                <DockPanel>
+                    <Grid DockPanel.Dock="Top">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="24"  />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="180" />
+                            <ColumnDefinition Width="180" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Orientation="Vertical" Grid.Row="0" Grid.Column="0">
+                            <Label Content="Input / Outputs" />
+                            <StackPanel Orientation="Horizontal">
+                                <ComboBox x:Name="NotWatchedResultVar" DisplayMemberPath="DisplayName" Width="150" />
+                                <Button Content="Add" x:Name="AddWatchableResultVarButton" Width="30"/>
+                            </StackPanel>
+                            <ScrollViewer MinHeight="128">
+                                <ListBox x:Name="WatchedResultVar" DisplayMemberPath="DisplayName" />
+                            </ScrollViewer>
+                        </StackPanel>
+                        <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="0">
+                            <Label Content="Scripts" />
+                            <Button Content="Open Script folder" />
+                            <ScrollViewer MinHeight="128">
+                                <ListBox x:Name="scriptListCosim">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Label Content="{Binding Location}" />
+                                                <CheckBox IsChecked="{Binding Use, Mode=TwoWay}" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </ScrollViewer>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="1">
+                            <Label Content="Algorithm" />
+                            <ComboBox x:Name="AlgorithmSelector" />
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="Step size" Width="70" />
+                                <TextBox x:Name="stepSizeBox" Width="100" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="Start time" Width="70" />
+                                <TextBox Width="100" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="End time" Width="70" />
+                                <TextBox Width="100" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Vertical" Grid.Row="0" Grid.Column="2" Grid.RowSpan="2">
+                            <v:PlotView x:Name="PlotView" MinWidth="400" MinHeight="300"/>
+                            <Button Content="Export Results" Width="120" HorizontalAlignment="Right" />
+                        </StackPanel>
+                    </Grid>
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" Height="26">
+                        <Button Content="Save Configuration" />
+                        <Button Content="Load Configuration" />
+                        <Button Content="Start Simulation" x:Name="CosimulationButton" Background="LimeGreen" />
+                        <Button Content="Stop Simulation" x:Name="StopSimulationButton" Background="Tomato" />
+                        <ProgressBar x:Name="CosimProgressBar" Minimum="0" Maximum="100" Value="0"  Width="120" Height="18" />
                     </StackPanel>
-                    <v:PlotView x:Name="PlotView" MinWidth="400" MinHeight="200"/>
-                </StackPanel>
+                </DockPanel>
             </TabItem>
+            <!--       DESIGN SPACE EXPLORATION       -->
             <TabItem x:Name="DSETab" Header="Design Space Exploration" TabIndex="3">
-                
+                <DockPanel>
+                    <Grid DockPanel.Dock="Top">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="24"  />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="180" />
+                            <ColumnDefinition Width="180" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Orientation="Vertical" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
+                            <Label Content="Input / Outputs" />
+                            <DataGrid x:Name="DseParameterList" MinHeight="180" AutoGenerateColumns="False">
+                                <DataGrid.Columns>
+                                    <DataGridComboBoxColumn x:Name="DataGridInputOptions" 
+                                                        SelectedValuePath="Connector" 
+                                                        SelectedValueBinding="{Binding Path=Input,Mode=TwoWay}" 
+                                                        DisplayMemberPath="DisplayName" Header="Input Name"/>
+                                    <DataGridTextColumn Binding="{Binding From,Mode=TwoWay}" Header="Start Value" MinWidth="40" />
+                                    <DataGridTextColumn Binding="{Binding To,Mode=TwoWay}" Header="End Value" MinWidth="40" />
+                                    <DataGridTextColumn Binding="{Binding Increment,Mode=TwoWay}" Header="Increment" />
+                                    <DataGridCheckBoxColumn Binding="{Binding UseFile,Mode=TwoWay}" Header="Use Input File" />
+                                    <DataGridTextColumn Binding="{Binding Filepath,Mode=TwoWay}" Header="Input File" />
+                                    <DataGridTemplateColumn>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Content="Browse" Click="OnDataGridFileBrowseClicked" CommandParameter="{Binding}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="0">
+                            <Label Content="Scripts" />
+                            <Button Content="Open Script folder" />
+                            <ScrollViewer MinHeight="128">
+                                <ListBox x:Name="scriptListDse">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Label Content="{Binding Location}" />
+                                                <CheckBox IsChecked="{Binding Use, Mode=TwoWay}" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </ScrollViewer>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="1">
+                            <Label Content="Result location" />
+                            <StackPanel Orientation="Horizontal">
+                                <TextBox x:Name="ResultLocationBox" Width="120" />
+                                <Button Content="Browse" Click="OnBrowseDseOutputLocation"/>
+                            </StackPanel>
+
+                            <Label Content="Base result filename" />
+                            <TextBox x:Name="BaseFileNameBox" Width="160" HorizontalAlignment="Left" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="2">
+                            <Label Content="WorkPackage5 Post Analysis Tool" />
+                            <Button Content="Open" Width="140" Height="32"/>
+                        </StackPanel>
+                    </Grid>
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" Height="26">
+                        <Button Content="Save Configuration" />
+                        <Button Content="Load Configuration" />
+                        <Button Content="Start Design Space Exploration" x:Name="DseButton" Background="LimeGreen" />
+                        <Button Content="Stop Design Space Exploration" x:Name="StopDseButton" Background="Tomato" />
+                        <ProgressBar x:Name="DseProgressBar" Minimum="0" Maximum="100" Value="0"  Width="120" Height="18" />
+                    </StackPanel>
+                </DockPanel>
             </TabItem>
         </TabControl>
-        
+        <StackPanel Orientation="Vertical" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Height="160">
+            <Label Content="Console"></Label>
+            <TextBlock Height="80" Text="This is the console"></TextBlock>
+        </StackPanel>
     </Grid>
 </Window>

@@ -13,6 +13,7 @@ namespace ModelLibrary.Models
     {
         private string name;
         private string unittype;
+        private string datatype;
         private Direction type;
         private Point position;
         /// <summary>
@@ -30,6 +31,19 @@ namespace ModelLibrary.Models
                 {
                     name = value;
                     OnPropertyChanged("Name");
+                }
+            }
+        }
+
+        public string DataType
+        {
+            get { return datatype; }
+            set
+            {
+                if (datatype != value)
+                {
+                    datatype = value;
+                    OnPropertyChanged("DataType");
                 }
             }
         }

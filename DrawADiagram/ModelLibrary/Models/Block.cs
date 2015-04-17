@@ -93,6 +93,11 @@ namespace ModelLibrary.Models
                 {
                     connectors = value;
                     OnPropertyChanged("Connectors");
+                    if (connectors != null)
+                    {
+                        //TODO: cahnge to non-anonymous method for deletion
+                        connectors.CollectionChanged += (sender, e) => { OnPropertyChanged("Connectors"); };
+                    }
                 }
             }
         }
@@ -106,6 +111,11 @@ namespace ModelLibrary.Models
                 {
                     parameters = value;
                     OnPropertyChanged("Parameters");
+                    if (parameters != null)
+                    {
+                        // TODO: change to non-anonymous method for deletion
+                        parameters.CollectionChanged += (sender, e) => { OnPropertyChanged("Parameters");  };
+                    }
                 }
             }
         }

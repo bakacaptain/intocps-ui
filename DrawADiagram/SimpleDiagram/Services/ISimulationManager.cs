@@ -10,10 +10,15 @@ namespace SimpleDiagram.Services
     {
         event EventHandler OnConfigureRequest;
         event EventHandler OnPlotUpdated;
+        event EventHandler OnSimulationEnd;
 
+        double DseProgress { get; }
+        double CosimProgress { get; }
         PlotModel Results { get; }
         List<ConfigurationItemModel> NotWatched { get; }
-        ObservableCollection<ConfigurationItemModel> Watched { get; } 
+        ObservableCollection<ConfigurationItemModel> Watched { get; }
+        ObservableCollection<ConfigurationItemModel> Watchable { get; } 
+        ObservableCollection<DSEConfigurationItemModel> DSEParameters { get; } 
 
         /// <summary>
         /// Maps the connections of the structural model with the interfaces of the simulation model
@@ -27,6 +32,9 @@ namespace SimpleDiagram.Services
 
         void WatchVariable(ConfigurationItemModel item);
         void UnWatchVariable(ConfigurationItemModel item);
+
+        void AddDesignSpaceParameter(DSEConfigurationItemModel item);
+        void RemoveDesignSpaceParameter(DSEConfigurationItemModel item);
 
         bool CanRun { get; }
         bool IsRunning { get; }

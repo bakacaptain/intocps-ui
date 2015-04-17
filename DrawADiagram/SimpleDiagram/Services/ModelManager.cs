@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web.UI.WebControls;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -12,6 +13,7 @@ using ModelLibrary.Models;
 using SimpleDiagram.Factories;
 using SimpleDiagram.Models;
 using SimpleDiagram.Utils;
+using Orientation = System.Windows.Controls.Orientation;
 
 namespace SimpleDiagram.Services
 {
@@ -23,9 +25,12 @@ namespace SimpleDiagram.Services
         public event EventHandler<BlockViewModel> OnModelAdded;
         public event EventHandler<BlockViewModel> OnModelRemoved;
         public event EventHandler<BlockViewModel> OnViewModelParameters;
+        public event EventHandler OnEntitiesUpdated;
 
         private List<BlockViewModel> blockViewModels;
         private List<ConnectionViewModel> connectionViewModels;
+
+
 
         public ModelManager(IModelFactory modelFactory, IConnectorFactory connectorFactory)
         {
@@ -40,7 +45,9 @@ namespace SimpleDiagram.Services
             OnModelAdded += (sender, model) => { };
             OnModelRemoved += (sender, model) => { };
             OnViewModelParameters += (sender, parameters) => { };
+            OnEntitiesUpdated += (sender, e) => { };
         }
+
 
 
         public void CreateModel(double x, double y)
@@ -115,7 +122,7 @@ namespace SimpleDiagram.Services
             model.Content = content;
             model.BlockModel = block;
             model.Height = 100;
-            model.Width = 80;
+            model.Width = 70;
 
             AddModel(model);
         }
@@ -124,6 +131,8 @@ namespace SimpleDiagram.Services
         {
             OnModelAdded(this, model);
             blockViewModels.Add(model);
+            model.BlockModel.PropertyChanged += (sender, e) => { OnEntitiesUpdated(this, null); };
+            OnEntitiesUpdated(this, null);
         }
 
         public void RemoveModel(BlockViewModel model)
@@ -132,6 +141,7 @@ namespace SimpleDiagram.Services
             //TODO: dispose this object
             OnModelRemoved(this, model);
             blockViewModels.Remove(model);
+            OnEntitiesUpdated(this, null);
         }
 
         public void CopyModel(BlockViewModel model)
@@ -197,6 +207,7 @@ namespace SimpleDiagram.Services
             newConnector.Hook = "N/A";
             model.BlockModel.Connectors.Add(newConnector);
         }
+
         public void AddConnection(ConnectionViewModel connection)
         {
             connectionViewModels.Add(connection);
