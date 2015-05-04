@@ -1,0 +1,2 @@
+when (sensorInput > 2000)
+   controller.motorVoltage = 0;
