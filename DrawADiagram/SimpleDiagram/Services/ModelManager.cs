@@ -59,12 +59,6 @@ namespace SimpleDiagram.Services
                 Position = new Point(x,y),
             };
 
-            //TODO: just for testing. customization can be added
-            var keyStem = "Overture";
-            PropertyAdvisor.SetSelectedExternalToolParameter(block.Parameters,keyStem);
-            PropertyAdvisor.SetExternalToolParameter(block.Parameters,keyStem,string.Empty,string.Empty,string.Empty);
-            PropertyAdvisor.SetExternalResultLocationParameter(block.Parameters,keyStem, string.Empty);
-
             CreateModel(block);
         }
 
@@ -123,6 +117,12 @@ namespace SimpleDiagram.Services
             model.BlockModel = block;
             model.Height = 100;
             model.Width = 70;
+
+            //TODO: just for testing. customization can be added
+            var keyStem = "Overture";
+            PropertyAdvisor.SetSelectedExternalToolParameter(block.Parameters, keyStem);
+            PropertyAdvisor.SetExternalToolParameter(block.Parameters, keyStem, string.Empty, string.Empty, string.Empty, string.Empty);
+            PropertyAdvisor.SetExternalResultLocationParameter(block.Parameters, keyStem, string.Empty);
 
             AddModel(model);
         }

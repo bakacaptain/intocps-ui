@@ -17,6 +17,7 @@ namespace SimpleDiagram.Utils
         public const string ARGUMENT = "ExecutionArgument";
         public const string RESULT = "ResultLocation";
         public const string SELECTED = "SelectedTool";
+        public const string FMI = "FMILocation";
 
         #region Keys
         private static string KeyDecorator(string keyStem, string prefix)
@@ -32,41 +33,45 @@ namespace SimpleDiagram.Utils
         /// <param name="collection"></param>
         /// <param name="keyStem">Prefixes will be applied to the keyStem</param>
         /// <returns></returns>
-        public static ObservableCollection <KeyValueCouple<string, string>> GetExternalToolParameter(ICollection<KeyValueCouple<string,string>> collection, string keyStem)
+        public static ObservableCollection<KeyValueCouple<string, string>> GetExternalToolParameter(ICollection<KeyValueCouple<string, string>> collection, string keyStem)
         {
-            var Get = new Func<string,string>((key) =>
+            var Get = new Func<string, string>((key) =>
             {
                 return collection.First(pair => pair.Key == key).Value;
             });
 
-            var toolPath = Get(KeyDecorator(keyStem,TOOL));
-            var projectPath = Get(KeyDecorator(keyStem,PROJECT));
-            var argument = Get(KeyDecorator(keyStem,ARGUMENT));
+            var toolPath = Get(KeyDecorator(keyStem, TOOL));
+            var projectPath = Get(KeyDecorator(keyStem, PROJECT));
+            var argument = Get(KeyDecorator(keyStem, ARGUMENT));
+            var fmiPath = Get(KeyDecorator(keyStem, FMI));
 
             return new ObservableCollection<KeyValueCouple<string, string>>
             {
                 new KeyValueCouple<string, string>(TOOL, toolPath),
                 new KeyValueCouple<string, string>(PROJECT, projectPath),
-                new KeyValueCouple<string, string>(ARGUMENT, argument)
+                new KeyValueCouple<string, string>(ARGUMENT, argument),
+                new KeyValueCouple<string, string>(FMI, fmiPath)
             };
         }
 
         public static void SetExternalToolParameter(ICollection<KeyValueCouple<string, string>> collection, string keyStem,
-            string toolPath, string projectPath, string argument)
+            string toolPath, string projectPath, string argument, string fmiPath)
         {
-            var toolKey = KeyDecorator(keyStem,TOOL);
-            var projectKey = KeyDecorator(keyStem,PROJECT);
-            var argumentKey = KeyDecorator(keyStem,ARGUMENT);
+            var toolKey = KeyDecorator(keyStem, TOOL);
+            var projectKey = KeyDecorator(keyStem, PROJECT);
+            var argumentKey = KeyDecorator(keyStem, ARGUMENT);
+            var fmiKey = KeyDecorator(keyStem, FMI);
 
             var Add = new Action<string, string>((key, value) =>
             {
-                collection.Where(pair => pair.Key == key).ForEach(pair => collection.Remove(pair));
+                collection.Where(pair => pair.Key == key).ToList().ForEach(pair => collection.Remove(pair));
                 collection.Add(new KeyValueCouple<string, string>(key, value));
             });
 
             Add(toolKey, toolPath);
             Add(projectKey, projectPath);
             Add(argumentKey, argument);
+            Add(fmiKey, fmiPath);
         }
 
         public static string GetExternalResultLocationParameter(ICollection<KeyValueCouple<string, string>> collection,
@@ -82,7 +87,7 @@ namespace SimpleDiagram.Utils
         {
             var resultKey = KeyDecorator(keyStem, RESULT);
          
-            collection.Where(pair => pair.Key == resultKey).ForEach(pair => collection.Remove(pair));
+            collection.Where(pair => pair.Key == resultKey).ToList().ForEach(pair => collection.Remove(pair));
             collection.Add(new KeyValueCouple<string, string>(resultKey, location));
         }
 
@@ -95,7 +100,8 @@ namespace SimpleDiagram.Utils
         public static void SetSelectedExternalToolParameter(ICollection<KeyValueCouple<string, string>> collection,
             string keyStem)
         {
-            collection.Where(pair => pair.Key == SELECTED).ForEach(pair => collection.Remove(pair));
+            var toBeDeleted = collection.Where(pair => pair.Key == SELECTED).ToList();
+            toBeDeleted.ForEach(pair => collection.Remove(pair));
             collection.Add(new KeyValueCouple<string, string>(SELECTED, keyStem));
         }
     } 

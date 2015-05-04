@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Forms;
 using System.Windows.Input;
@@ -51,8 +52,10 @@ namespace SimpleDiagram.Views
             DseParameterList.SetBinding(DataGrid.ItemsSourceProperty, dseParamBind);
             var dseProgressBind = new Binding {Source=simManager, Path = new PropertyPath("DseProgress"), Mode=BindingMode.OneWay};
             DseProgressBar.SetBinding(ProgressBar.ValueProperty, dseProgressBind);
+            DseProgressLabel.SetBinding(TextBlock.TextProperty, dseProgressBind);
             var cosimProgressBind = new Binding { Source = simManager, Path = new PropertyPath("CosimProgress"), Mode = BindingMode.OneWay };
             CosimProgressBar.SetBinding(ProgressBar.ValueProperty, cosimProgressBind);
+            CosimProgressLabel.SetBinding(TextBlock.TextProperty, cosimProgressBind);
 
             modelManager.OnModelAdded += AddModel;
             modelManager.OnModelRemoved += RemoveModel;
@@ -81,6 +84,16 @@ namespace SimpleDiagram.Views
                     var item = WatchedResultVar.SelectedValue as ConfigurationItemModel;
                     simManager.UnWatchVariable(item);
                     NotWatchedResultVar.ItemsSource = simManager.NotWatched;  
+                }
+            };
+
+            BrowseOutputLocationButton.Click += (s, e) =>
+            {
+                var dialog = new FolderBrowserDialog();
+                var result = dialog.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK)
+                {
+                    BrowseOutputLocationBox.Text = dialog.SelectedPath;
                 }
             };
 
@@ -121,11 +134,11 @@ namespace SimpleDiagram.Views
 
             var selected = "Overture";
             PropertyAdvisor.SetSelectedExternalToolParameter(block2.Parameters, selected);
-            PropertyAdvisor.SetExternalToolParameter(block2.Parameters, "Overture", @"C:\Study\Overture\Overture.exe", @"C:\Users\Sam\Documents\Overture\workspace\Nested", "-import");
+            PropertyAdvisor.SetExternalToolParameter(block2.Parameters, "Overture", @"C:\Study\Overture\Overture.exe", @"C:\Users\Sam\Documents\Overture\workspace\Nested", "-import", string.Empty);
             PropertyAdvisor.SetExternalResultLocationParameter(block2.Parameters, selected, @"C:\Users\Sam\Desktop\data2.csv");
 
             PropertyAdvisor.SetSelectedExternalToolParameter(block1.Parameters, selected);
-            PropertyAdvisor.SetExternalToolParameter(block1.Parameters, "Overture", @"C:\Study\Overture\Overture.exe", @"C:\Users\Sam\Documents\Overture\workspace\TestProject", "-import");
+            PropertyAdvisor.SetExternalToolParameter(block1.Parameters, "Overture", @"C:\Study\Overture\Overture.exe", @"C:\Users\Sam\Documents\Overture\workspace\TestProject", "-import", string.Empty);
             PropertyAdvisor.SetExternalResultLocationParameter(block1.Parameters, selected, @"C:\Users\Sam\Desktop\data.csv");
 
 
@@ -135,188 +148,195 @@ namespace SimpleDiagram.Views
 
             #endregion model
 
-            #region LineFollower Robot Model
-
-            var controllerConnectors = new PropertyObservingCollection<Connector>
+            ImportModelButton.Click += (s, e) =>
             {
-                new Connector{ Name = "sensorSignalLeft", Type = Direction.IN, DataType = "Real"},
-                new Connector{ Name = "sensorSignalRight", Type = Direction.IN, DataType = "Real"},
-                new Connector{ Name = "motorSignalLeft", Type = Direction.OUT, DataType = "Real"},
-                new Connector{ Name = "motorSignalRight", Type = Direction.OUT, DataType = "Real"},
-                new Connector{ Name = "encoderSignalLeft", Type = Direction.IN, DataType = "Real"},
-                new Connector{ Name = "encoderSignalRight", Type = Direction.IN, DataType = "Real"}
+                #region LineFollower Robot Model
+
+                var controllerConnectors = new PropertyObservingCollection<Connector>
+                {
+                    new Connector {Name = "sensorSignalLeft", Type = Direction.IN, DataType = "Real"},
+                    new Connector {Name = "sensorSignalRight", Type = Direction.IN, DataType = "Real"},
+                    new Connector {Name = "motorSignalLeft", Type = Direction.OUT, DataType = "Real"},
+                    new Connector {Name = "motorSignalRight", Type = Direction.OUT, DataType = "Real"},
+                    new Connector {Name = "encoderSignalLeft", Type = Direction.IN, DataType = "Real"},
+                    new Connector {Name = "encoderSignalRight", Type = Direction.IN, DataType = "Real"}
+                };
+
+                var bodyConnectors = new PropertyObservingCollection<Connector>
+                {
+                    new Connector {Name = "toBodyLeft", Type = Direction.IN, DataType = "TranslationalForce"},
+                    new Connector {Name = "toBodyRight", Type = Direction.IN, DataType = "TranslationalForce"},
+                    new Connector {Name = "robotPosition", Type = Direction.OUT, DataType = "Position"}
+                };
+
+                var lineConnectors = new PropertyObservingCollection<Connector>
+                {
+                    new Connector {Name = "robotPosition", Type = Direction.IN, DataType = "Position"},
+                    new Connector {Name = "opticalReflectionLeft", Type = Direction.OUT, DataType = "Real"},
+                    new Connector {Name = "opticalReflectionRight", Type = Direction.OUT, DataType = "Real"}
+                };
+
+                var motorLeftConnectors = new PropertyObservingCollection<Connector>
+                {
+                    new Connector {Name = "motorSignalLeft", Type = Direction.IN, DataType = "Real"},
+                    new Connector {Name = "toEncoderLeft", Type = Direction.OUT, DataType = "RotationForce"},
+                    new Connector {Name = "toWheelLeft", Type = Direction.OUT, DataType = "RotationForce"}
+                };
+
+                var encoderLeftConnectors = new PropertyObservingCollection<Connector>
+                {
+                    new Connector {Name = "toEncoderLeft", Type = Direction.IN, DataType = "RotationForce"},
+                    new Connector {Name = "encoderSignalLeft", Type = Direction.OUT, DataType = "Real"},
+                };
+
+                var wheelLeftConnectors = new PropertyObservingCollection<Connector>
+                {
+                    new Connector {Name = "toWheelLeft", Type = Direction.IN, DataType = "RotationForce"},
+                    new Connector {Name = "toBodyLeft", Type = Direction.OUT, DataType = "TranslationalForce"}
+                };
+
+                var sensorLeftConnectors = new PropertyObservingCollection<Connector>
+                {
+                    new Connector {Name = "sensorSignalLeft", Type = Direction.OUT, DataType = "Real"},
+                    new Connector {Name = "opticalReflectionLeft", Type = Direction.IN, DataType = "Real"}
+                };
+
+                var motorRightConnectors = new PropertyObservingCollection<Connector>
+                {
+                    new Connector {Name = "motorSignalRight", Type = Direction.IN, DataType = "Real"},
+                    new Connector {Name = "toEncoderRight", Type = Direction.OUT, DataType = "RotationForce"},
+                    new Connector {Name = "toWheelRight", Type = Direction.OUT, DataType = "RotationForce"}
+                };
+
+                var encoderRightConnectors = new PropertyObservingCollection<Connector>
+                {
+                    new Connector {Name = "toEncoderRight", Type = Direction.IN, DataType = "RotationForce"},
+                    new Connector {Name = "encoderSignalRight", Type = Direction.OUT, DataType = "Real"},
+                };
+
+                var wheelRightConnectors = new PropertyObservingCollection<Connector>
+                {
+                    new Connector {Name = "toWheelRight", Type = Direction.IN, DataType = "RotationForce"},
+                    new Connector {Name = "toBodyRight", Type = Direction.OUT, DataType = "TranslationalForce"}
+                };
+
+                var sensorRightConnectors = new PropertyObservingCollection<Connector>
+                {
+                    new Connector {Name = "sensorSignalRight", Type = Direction.OUT, DataType = "Real"},
+                    new Connector {Name = "opticalReflectionRight", Type = Direction.IN, DataType = "Real"}
+                };
+
+                // ----------------------------
+
+                var line = new Block
+                {
+                    Name = "line",
+                    Connectors = lineConnectors,
+                    Position = new Point(580, 290),
+                };
+
+                var controller = new Block
+                {
+                    Name = "controller",
+                    Connectors = controllerConnectors,
+                    Position = new Point(60, 290),
+                };
+
+                var body = new Block
+                {
+                    Name = "body",
+                    Connectors = bodyConnectors,
+                    Position = new Point(450, 290),
+                };
+
+                var leftMotor = new Block
+                {
+                    Name = "motorLeft",
+                    Connectors = motorLeftConnectors,
+                    Position = new Point(190, 370),
+                };
+
+                var leftEncoder = new Block
+                {
+                    Name = "encoderLeft",
+                    Connectors = encoderLeftConnectors,
+                    Position = new Point(320, 530),
+                };
+
+                var leftWheel = new Block
+                {
+                    Name = "wheelLeft",
+                    Connectors = wheelLeftConnectors,
+                    Position = new Point(320, 370),
+                };
+
+                var leftSensor = new Block
+                {
+                    Name = "sensorLeft",
+                    Connectors = sensorLeftConnectors,
+                    Position = new Point(710, 370),
+                };
+
+                // ----------------------------
+
+                var rightMotor = new Block
+                {
+                    Name = "motorRight",
+                    Connectors = motorRightConnectors,
+                    Position = new Point(190, 210),
+                };
+
+                var rightEncoder = new Block
+                {
+                    Name = "encoderRight",
+                    Connectors = encoderRightConnectors,
+                    Position = new Point(320, 50),
+                };
+
+                var rightWheel = new Block
+                {
+                    Name = "wheelRight",
+                    Connectors = wheelRightConnectors,
+                    Position = new Point(320, 210),
+                };
+
+                var rightSensor = new Block
+                {
+                    Name = "sensorRight",
+                    Connectors = sensorRightConnectors,
+                    Position = new Point(710, 210),
+                };
+
+                // -----------------------------
+
+                modelManager.CreateModel(line);
+                modelManager.CreateModel(controller);
+                modelManager.CreateModel(body);
+                modelManager.CreateModel(leftMotor);
+                modelManager.CreateModel(leftEncoder);
+                modelManager.CreateModel(leftSensor);
+                modelManager.CreateModel(leftWheel);
+                modelManager.CreateModel(rightMotor);
+                modelManager.CreateModel(rightEncoder);
+                modelManager.CreateModel(rightSensor);
+                modelManager.CreateModel(rightWheel);
+
+                // ------------------------------
+
+                PropertyAdvisor.SetSelectedExternalToolParameter(controller.Parameters, selected);
+                PropertyAdvisor.SetExternalToolParameter(controller.Parameters, "Overture",
+                    @"C:\Study\Overture\Overture.exe", @"C:\Users\Sam\Documents\Overture\workspace\RobotRT", "-import", string.Empty);
+                PropertyAdvisor.SetExternalResultLocationParameter(controller.Parameters, selected,
+                    @"C:\Users\Sam\Desktop\data.csv");
+
+                PropertyAdvisor.SetSelectedExternalToolParameter(line.Parameters, selected);
+                PropertyAdvisor.SetExternalToolParameter(line.Parameters, "Overture", @"C:\Study\Overture\Overture.exe",
+                    @"C:\Users\Sam\Documents\Overture\workspace\RobotRT", "-import", string.Empty);
+                PropertyAdvisor.SetExternalResultLocationParameter(line.Parameters, selected,
+                    @"C:\Users\Sam\Desktop\data2.csv");
+
+                #endregion
             };
-
-            var bodyConnectors = new PropertyObservingCollection<Connector>
-            {
-                new Connector{ Name = "toBodyLeft", Type = Direction.IN, DataType = "TranslationalForce"},
-                new Connector{ Name = "toBodyRight", Type = Direction.IN, DataType = "TranslationalForce"},
-                new Connector{ Name = "robotPosition", Type = Direction.OUT, DataType = "Position"}
-            };
-
-            var lineConnectors = new PropertyObservingCollection<Connector>
-            {
-                new Connector{ Name = "robotPosition", Type = Direction.IN, DataType = "Position"},
-                new Connector{ Name="opticalReflectionLeft", Type = Direction.OUT, DataType = "Real"},
-                new Connector{ Name="opticalReflectionRight", Type = Direction.OUT, DataType = "Real"}
-            };
-
-            var motorLeftConnectors = new PropertyObservingCollection<Connector>
-            {
-                new Connector{ Name = "motorSignalLeft", Type = Direction.IN, DataType = "Real"},
-                new Connector{ Name = "toEncoderLeft", Type = Direction.OUT, DataType = "RotationForce"},
-                new Connector{ Name = "toWheelLeft", Type = Direction.OUT, DataType = "RotationForce"}
-            };
-
-            var encoderLeftConnectors = new PropertyObservingCollection<Connector>
-            {
-                new Connector{ Name = "toEncoderLeft", Type = Direction.IN, DataType = "RotationForce"},
-                new Connector{ Name = "encoderSignalLeft", Type = Direction.OUT, DataType = "Real"},
-            };
-
-            var wheelLeftConnectors = new PropertyObservingCollection<Connector>
-            {
-                new Connector{ Name = "toWheelLeft", Type = Direction.IN, DataType = "RotationForce"},
-                new Connector{ Name = "toBodyLeft", Type = Direction.OUT, DataType = "TranslationalForce"}
-            };
-
-            var sensorLeftConnectors = new PropertyObservingCollection<Connector>
-            {
-                new Connector{ Name = "sensorSignalLeft", Type = Direction.OUT, DataType = "Real"},
-                new Connector{ Name="opticalReflectionLeft", Type = Direction.IN, DataType = "Real"}
-            };
-
-            var motorRightConnectors = new PropertyObservingCollection<Connector>
-            {
-                new Connector{ Name = "motorSignalRight", Type = Direction.IN, DataType = "Real"},
-                new Connector{ Name = "toEncoderRight", Type = Direction.OUT, DataType = "RotationForce"},
-                new Connector{ Name = "toWheelRight", Type = Direction.OUT, DataType = "RotationForce"}
-            };
-
-            var encoderRightConnectors = new PropertyObservingCollection<Connector>
-            {
-                new Connector{ Name = "toEncoderRight", Type = Direction.IN, DataType = "RotationForce"},
-                new Connector{ Name = "encoderSignalRight", Type = Direction.OUT, DataType = "Real"},
-            };
-
-            var wheelRightConnectors = new PropertyObservingCollection<Connector>
-            {
-                new Connector{ Name = "toWheelRight", Type = Direction.IN, DataType = "RotationForce"},
-                new Connector{ Name = "toBodyRight", Type = Direction.OUT, DataType = "TranslationalForce"}
-            };
-
-            var sensorRightConnectors = new PropertyObservingCollection<Connector>
-            {
-                new Connector{ Name = "sensorSignalRight", Type = Direction.OUT, DataType = "Real"},
-                new Connector{ Name="opticalReflectionRight", Type = Direction.IN, DataType = "Real"}
-            };
-
-            // ----------------------------
-
-            var line = new Block
-            {
-                Name = "line",
-                Connectors = lineConnectors,
-                Position = new Point(580,290),
-            };
-
-            var controller = new Block
-            {
-                Name = "controller",
-                Connectors = controllerConnectors,
-                Position = new Point(60,290),
-            };
-
-            var body = new Block
-            {
-                Name = "body",
-                Connectors = bodyConnectors,
-                Position = new Point(450,290),
-            };
-
-            var leftMotor = new Block
-            {
-                Name = "motorLeft",
-                Connectors = motorLeftConnectors,
-                Position = new Point(190,370),
-            };
-
-            var leftEncoder = new Block
-            {
-                Name = "encoderLeft",
-                Connectors = encoderLeftConnectors,
-                Position = new Point(320,530),
-            };
-
-            var leftWheel = new Block
-            {
-                Name = "wheelLeft",
-                Connectors = wheelLeftConnectors,
-                Position = new Point(320,370),
-            };
-
-            var leftSensor = new Block
-            {
-                Name = "sensorLeft",
-                Connectors = sensorLeftConnectors,
-                Position = new Point(710,370),
-            };
-
-            // ----------------------------
-
-            var rightMotor = new Block
-            {
-                Name = "motorRight",
-                Connectors = motorRightConnectors,
-                Position = new Point(190,210),
-            };
-
-            var rightEncoder = new Block
-            {
-                Name = "encoderRight",
-                Connectors = encoderRightConnectors,
-                Position = new Point(320,50),
-            };
-
-            var rightWheel = new Block
-            {
-                Name = "wheelRight",
-                Connectors = wheelRightConnectors,
-                Position = new Point(320,210),
-            };
-
-            var rightSensor = new Block
-            {
-                Name = "sensorRight",
-                Connectors = sensorRightConnectors,
-                Position = new Point(710,210),
-            };
-
-            // -----------------------------
-
-            PropertyAdvisor.SetSelectedExternalToolParameter(controller.Parameters, selected);
-            PropertyAdvisor.SetExternalToolParameter(controller.Parameters, "Overture", @"C:\Study\Overture\Overture.exe", @"C:\Users\Sam\Documents\Overture\workspace\RobotRT", "-import");
-            PropertyAdvisor.SetExternalResultLocationParameter(controller.Parameters, selected, @"C:\Users\Sam\Desktop\data.csv");
-
-            PropertyAdvisor.SetSelectedExternalToolParameter(line.Parameters, selected);
-            PropertyAdvisor.SetExternalToolParameter(line.Parameters, "Overture", @"C:\Study\Overture\Overture.exe", @"C:\Users\Sam\Documents\Overture\workspace\RobotRT", "-import");
-            PropertyAdvisor.SetExternalResultLocationParameter(line.Parameters, selected, @"C:\Users\Sam\Desktop\data2.csv");
-
-            // -----------------------------
-
-            modelManager.CreateModel(line);
-            modelManager.CreateModel(controller);
-            modelManager.CreateModel(body);
-            modelManager.CreateModel(leftMotor);
-            modelManager.CreateModel(leftEncoder);
-            modelManager.CreateModel(leftSensor);
-            modelManager.CreateModel(leftWheel);
-            modelManager.CreateModel(rightMotor);
-            modelManager.CreateModel(rightEncoder);
-            modelManager.CreateModel(rightSensor);
-            modelManager.CreateModel(rightWheel);
-
-            #endregion
 
             //TODO: bind to the model instead of the viewmodel of the connector
         }
@@ -370,13 +390,6 @@ namespace SimpleDiagram.Views
                     item.Filepath = filename;
                 }
             }
-        }
-
-        private void OnBrowseDseOutputLocation(object sender, RoutedEventArgs e)
-        {
-            var dialog = new FolderBrowserDialog();
-            var result = dialog.ShowDialog();
-            
         }
     }
 }

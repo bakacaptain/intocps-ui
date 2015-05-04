@@ -13,33 +13,41 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
-    <Grid Margin="10" DockPanel.Dock="Top" MinHeight="548">
+    <Grid MinHeight="548">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="100" />
+            <ColumnDefinition Width="120" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
+        <Menu Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Height="20">
+            <MenuItem Header="_File">
+                <MenuItem Header="_New Project" />
+                <MenuItem Header="_Open Project" />
+                <MenuItem Header="_Save Project" />
+                <MenuItem Header="_Import Model" x:Name="ImportModelButton" />
+                <MenuItem Header="_Import Components from XMI" />
+            </MenuItem>
+        </Menu>
+        
         <!-- Toolbox -->
-        <StackPanel Grid.Column="0" Margin="0,0,5,0" Grid.Row="0">
-            <Expander Header="Symbols" Content="{StaticResource ToolStencils}" IsExpanded="True" />
+        <StackPanel Grid.Column="0" Margin="10,10,8,0" Grid.Row="1">
+            <Expander Header="Components" Content="{StaticResource ToolStencils}" IsExpanded="True" />
         </StackPanel>
 
-        <!-- GridSplitter -->
-        <GridSplitter Focusable="False" Width="2" Background="{StaticResource LightBorderBrush}"
-                    VerticalAlignment="Stretch" HorizontalAlignment="Right"/>
         <!-- Designer -->
-        <TabControl x:Name="TabControl" Grid.Column="1" Grid.Row="0" Height="548">
-            <TabItem x:Name="DiagramTab" Header="Diagram" IsSelected="True" TabIndex="0">
+        <TabControl x:Name="TabControl" Grid.Column="1" Grid.Row="1" Height="548" Margin="0 10 10 10">
+            <TabItem x:Name="DiagramTab" Header="Internal Block Diagram" IsSelected="True" TabIndex="0">
                 <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                     <c:DiagramCanvas x:Name="DiagramCanvas" Background="Transparent" />
                 </ScrollViewer>
             </TabItem>
-            <TabItem x:Name="ParamTab" Header="Parameters" TabIndex="1">
-                <ScrollViewer>
+            <TabItem x:Name="ParamTab" Header="Block Properties" TabIndex="1">
+                <ScrollViewer Margin="10">
                     <StackPanel Orientation="Vertical">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -56,7 +64,7 @@
                             <Label Content="Version" Grid.Row="1" Grid.Column="0" />
                             <Label x:Name="ParamModelVersion" Grid.Row="1" Grid.Column="1" />
                         </Grid>
-                        <Label Content="Parameters" FontStyle="Oblique" />
+                        <Label Content="Block properties" FontStyle="Oblique" Padding="0 20 0 0"/>
                         <ListBox x:Name="ParamList">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
@@ -67,7 +75,7 @@
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
-                        <Label Content="Shared variables" FontStyle="Oblique" />
+                        <Label Content="Shared variables" FontStyle="Oblique" Padding="0 20 0 0" />
                         <ListBox x:Name="IOList">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
@@ -106,19 +114,19 @@
             </TabItem>
             <TabItem x:Name="CoSimTab" Header="Co-simulation" TabIndex="2">
                 <DockPanel>
-                    <Grid DockPanel.Dock="Top">
+                    <Grid DockPanel.Dock="Top" Margin="10">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="24"  />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="180" />
-                            <ColumnDefinition Width="180" />
+                            <ColumnDefinition Width="190" />
+                            <ColumnDefinition Width="190" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <StackPanel Orientation="Vertical" Grid.Row="0" Grid.Column="0">
+                        <StackPanel Orientation="Vertical" Grid.Row="0" Grid.Column="0" Margin="0 0 10 0">
                             <Label Content="Input / Outputs" />
                             <StackPanel Orientation="Horizontal">
                                 <ComboBox x:Name="NotWatchedResultVar" DisplayMemberPath="DisplayName" Width="150" />
@@ -128,7 +136,7 @@
                                 <ListBox x:Name="WatchedResultVar" DisplayMemberPath="DisplayName" />
                             </ScrollViewer>
                         </StackPanel>
-                        <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="0">
+                        <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="0" Margin="0 20 10 0">
                             <Label Content="Scripts" />
                             <Button Content="Open Script folder" />
                             <ScrollViewer MinHeight="128">
@@ -145,14 +153,14 @@
                             </ScrollViewer>
                         </StackPanel>
 
-                        <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="1">
+                        <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="1" Margin="0 20 10 0">
                             <Label Content="Algorithm" />
                             <ComboBox x:Name="AlgorithmSelector" />
                             <StackPanel Orientation="Horizontal">
                                 <Label Content="Step size" Width="70" />
                                 <TextBox x:Name="stepSizeBox" Width="100" />
                             </StackPanel>
-                            <StackPanel Orientation="Horizontal">
+                            <StackPanel Orientation="Horizontal" Margin="0 20 0 0">
                                 <Label Content="Start time" Width="70" />
                                 <TextBox Width="100" />
                             </StackPanel>
@@ -168,18 +176,20 @@
                         </StackPanel>
                     </Grid>
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" Height="26">
-                        <Button Content="Save Configuration" />
-                        <Button Content="Load Configuration" />
-                        <Button Content="Start Simulation" x:Name="CosimulationButton" Background="LimeGreen" />
-                        <Button Content="Stop Simulation" x:Name="StopSimulationButton" Background="Tomato" />
+                        <Button Content="Save Configuration" Padding="5 0 5 0" Margin="10 0 0 0"/>
+                        <Button Content="Load Configuration" Padding="5 0 5 0" Margin="0 0 150 0"/>
+                        <Button Content="Start Simulation" x:Name="CosimulationButton" Background="LimeGreen" Padding="5 0 5 0" Margin="0 0 10 0" />
+                        <Button Content="Stop Simulation" x:Name="StopSimulationButton" Background="Tomato" Padding="5 0 5 0" Margin="0 0 24 0" />
                         <ProgressBar x:Name="CosimProgressBar" Minimum="0" Maximum="100" Value="0"  Width="120" Height="18" />
+                        <TextBlock x:Name="CosimProgressLabel" Text="0" Padding="5 0 0 0" Margin="10 0 0 0" VerticalAlignment="Center" />
+                        <Label Content="%" VerticalAlignment="Center" />
                     </StackPanel>
                 </DockPanel>
             </TabItem>
             <!--       DESIGN SPACE EXPLORATION       -->
             <TabItem x:Name="DSETab" Header="Design Space Exploration" TabIndex="3">
                 <DockPanel>
-                    <Grid DockPanel.Dock="Top">
+                    <Grid DockPanel.Dock="Top" Margin="10">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -215,7 +225,7 @@
                             </DataGrid>
                         </StackPanel>
 
-                        <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="0">
+                        <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="0" Margin="0 20 10 0">
                             <Label Content="Scripts" />
                             <Button Content="Open Script folder" />
                             <ScrollViewer MinHeight="128">
@@ -232,33 +242,35 @@
                             </ScrollViewer>
                         </StackPanel>
 
-                        <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="1">
+                        <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="1" Margin="0 20 10 0" >
                             <Label Content="Result location" />
                             <StackPanel Orientation="Horizontal">
-                                <TextBox x:Name="ResultLocationBox" Width="120" />
-                                <Button Content="Browse" Click="OnBrowseDseOutputLocation"/>
+                                <TextBox x:Name="BrowseOutputLocationBox" Width="120" />
+                                <Button x:Name="BrowseOutputLocationButton" Content="Browse" />
                             </StackPanel>
 
                             <Label Content="Base result filename" />
                             <TextBox x:Name="BaseFileNameBox" Width="160" HorizontalAlignment="Left" />
                         </StackPanel>
 
-                        <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="2">
+                        <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="2" Margin="0 20 0 0">
                             <Label Content="WorkPackage5 Post Analysis Tool" />
                             <Button Content="Open" Width="140" Height="32"/>
                         </StackPanel>
                     </Grid>
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" Height="26">
-                        <Button Content="Save Configuration" />
-                        <Button Content="Load Configuration" />
-                        <Button Content="Start Design Space Exploration" x:Name="DseButton" Background="LimeGreen" />
-                        <Button Content="Stop Design Space Exploration" x:Name="StopDseButton" Background="Tomato" />
+                        <Button Content="Save Configuration" Padding="5 0 5 0" Margin="10 0 0 0"/>
+                        <Button Content="Load Configuration" Padding="5 0 5 0" Margin="0 0 40 0"/>
+                        <Button Content="Start Design Space Exploration" x:Name="DseButton" Background="LimeGreen" Padding="5 0 5 0" Margin="0 0 10 0" />
+                        <Button Content="Stop Design Space Exploration" x:Name="StopDseButton" Background="Tomato" Padding="5 0 5 0" Margin="0 0 24 0" />
                         <ProgressBar x:Name="DseProgressBar" Minimum="0" Maximum="100" Value="0"  Width="120" Height="18" />
+                        <TextBlock x:Name="DseProgressLabel" Text="0" Padding="5 0 0 0" Margin="10 0 0 0" VerticalAlignment="Center" />
+                        <Label Content="%" VerticalAlignment="Center" />
                     </StackPanel>
                 </DockPanel>
             </TabItem>
         </TabControl>
-        <StackPanel Orientation="Vertical" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Height="160">
+        <StackPanel Orientation="Vertical" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="2" Height="160">
             <Label Content="Console"></Label>
             <TextBlock Height="80" Text="This is the console"></TextBlock>
         </StackPanel>
